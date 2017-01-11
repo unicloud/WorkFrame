@@ -215,8 +215,7 @@ pip-log.txt
 .mr.developer.cfg
 ClientBin
 .xap
-/Presentation/nondxp2d.smf
-/Presentation/bzax2h2c.5ft
-/ModuleAService/Log
-/Shell.Web/Upload
-/Shell.Web/ClientBin
+/WebRoot/WEB-INF/classes
+/src/*.properties
+/src/resources/spring
+/src/struts.xml
