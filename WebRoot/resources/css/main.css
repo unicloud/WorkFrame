@@ -1,0 +1,42 @@
+/*  
+ * 主css文档，主要对jsp页面进行渲染
+ */
+html,body{font-size:9pt; background-color:#FFF; color:#000; padding:0; margin:0; height: 100%; width: 100%; overflow: hidden;}
+body,td,div,span,ul,li,a{font-size:9pt;}
+body {
+	text-align: center;
+}
+
+img {
+	border: none;
+}
+
+/** Chrome Firefox Opera Safari IE9+ */
+input:disabled {
+	background-color : #F1F5FA;
+}
+
+/** IE8 */
+input[disabled] {
+	background-color : #F1F5FA;
+}
+
+/** IE6 */
+input.disabled {
+	background-color : #F1F5FA;
+}
+
+a {
+	color: #15428B;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #FF3300;
+	text-decoration: underline;
+}
+
+/* 设置样式 */
+/*主页头部，主页背景 颜色、图片
+ * 主体部分  Grid的表头、列高、列宽、字体（显示字体，编辑字体）、特殊颜色标记
+ */
