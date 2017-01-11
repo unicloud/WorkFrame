@@ -119,8 +119,8 @@
         <location>/resources/errpage/500.jsp</location>
     </error-page>
 
-    <!-- 8.设置serverlet  -->
-    <!-- 测试界面 -->
+<!-- 9.设置serverlet -->
+    <!-- 主页 -->
      <servlet>
          <servlet-name>homePage</servlet-name> 
          <jsp-file>/WEB-INF/content/homePage.jsp</jsp-file> 
@@ -129,15 +129,15 @@
          <servlet-name>homePage</servlet-name> 
          <url-pattern>/homePage</url-pattern> 
      </servlet-mapping>
-
-     <servlet>
-         <servlet-name>myJsp</servlet-name> 
-         <jsp-file>/WEB-INF/content/MyJsp.jsp</jsp-file> 
+    <!-- 客户汇总信息 -->
+    <servlet>
+         <servlet-name>customerScore</servlet-name> 
+         <jsp-file>/WEB-INF/content/basic/customerScore.jsp</jsp-file> 
      </servlet> 
-     <servlet-mapping>
-         <servlet-name>myJsp</servlet-name> 
-         <url-pattern>/myJsp</url-pattern> 
-     </servlet-mapping>
+     <servlet-mapping> 
+         <servlet-name>customerScore</servlet-name> 
+         <url-pattern>/customerScore</url-pattern> 
+     </servlet-mapping>     
 
      <!-- 此处代码写在最下面 -->
      <servlet-mapping>  
