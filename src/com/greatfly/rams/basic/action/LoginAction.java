@@ -4,7 +4,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jcajce.provider.symmetric.AES;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
@@ -13,8 +12,6 @@ import com.greatfly.common.CommonConstant;
 import com.greatfly.common.action.BaseAction;
 import com.greatfly.common.annotation.Description;
 import com.greatfly.common.util.JsonUtil;
-import com.greatfly.common.util.cryptography.AESUtil;
-import com.greatfly.common.util.cryptography.MD5Util;
 import com.greatfly.common.util.msgconverter.CommonMsgOutput;
 import com.greatfly.common.vo.RespVo;
 import com.greatfly.rams.basic.service.LoginService;

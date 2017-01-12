@@ -1,0 +1,13 @@
+##vo模板
+package $!{model.basePackage}.vo;
+
+import $!{model.basePackage}.domain.$!{model.modelName};
+
+/**
+ * $!{model.domainName}vo
+ * @author $!{annotation.author}
+ * $!{annotation.createDate}
+ */
+public class $!{model.voName} extends $!{model.modelName} {
+
+}

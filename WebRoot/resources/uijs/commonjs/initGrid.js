@@ -35,7 +35,7 @@ var oneResultGridFunc = function(oneResultGrid, tabVars, isShowWindow, isShowWin
             } else {
                 if (typeof(responseText.msg) != "undefined") {
                     layer.alert("请求出现异常,请重试或者联系系统管理员,异常信息为: " 
-                            + responseText.msg, {icon : 3});
+                            +  responseText.msg, {icon : 3});
                 }
             }
         },

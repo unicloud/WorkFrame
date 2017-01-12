@@ -137,7 +137,7 @@
      <servlet-mapping> 
          <servlet-name>customerScore</servlet-name> 
          <url-pattern>/customerScore</url-pattern> 
-     </servlet-mapping>     
+     </servlet-mapping>
 
      <!-- 此处代码写在最下面 -->
      <servlet-mapping>  
