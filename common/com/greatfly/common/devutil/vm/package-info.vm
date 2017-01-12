@@ -1,0 +1,10 @@
+##package-info模板
+@ParentPackage("greatfly-default")
+@Namespace("$!{model.nameSpace}")
+@Description("$!{model.domainName}")
+package $!{model.basePackage}.action;
+
+import org.apache.struts2.convention.annotation.ParentPackage;
+import org.apache.struts2.convention.annotation.Namespace;
+
+import com.greatfly.common.annotation.Description;

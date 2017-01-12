@@ -1,0 +1,146 @@
+##action模板
+package $!{model.basePackage}.action;
+
+import javax.annotation.Resource;
+
+import org.apache.log4j.Logger;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
+
+import com.greatfly.common.action.BaseAction;
+import com.greatfly.common.annotation.Description;
+import com.greatfly.common.util.PageSupport;
+import com.greatfly.common.util.StringUtil;
+import $!{model.basePackage}.domain.$!{model.modelName};
+import $!{model.basePackage}.ucc.$!{model.uccName};
+import $!{model.basePackage}.vo.$!{model.voName};
+
+/**
+ * $!{model.domainName}action
+ * @author $!{annotation.author}
+ * $!{annotation.createDate}
+ */
+@Scope("prototype")
+@Controller
+@Description("$!{model.domainName}Action")
+public class $!{model.actionName} extends BaseAction {
+	private static Logger log = Logger.getLogger($!{model.actionName}.class);
+	@Resource
+	private $!{model.uccName} $!{model.uccLowerName};
+	//分页数据集
+	private PageSupport<$!{model.voName}> ps;
+	//查询条件
+	private $!{model.voName} $!{model.voLowerName};
+	//编辑对象
+	private $!{model.modelName} $!{model.modelLowerName};
+	
+	/**
+	 * 查询界面初始化
+	 * @return 查询界面
+	 */
+	public String init() {
+		$!{model.voLowerName} = new $!{model.voName}();
+		//默认查询条件
+		
+		return list();
+	}
+	
+	/**
+	 * 查询
+	 * @return 查询界面
+	 */
+	public String list() {
+		ps = initPs();
+		try {
+			$!{model.uccLowerName}.list(ps, $!{model.voLowerName});
+		} catch (Exception e) {
+			log.error("查询异常", e);
+			request.setAttribute("msg", "查询异常：" + e.getMessage());
+		}
+		
+		return "list";
+	}
+	
+	/**
+	 * 新增/编辑
+	 * @return 编辑页面
+	 */
+	public String edit() {
+		String idStr = request.getParameter("id");
+		try {
+			if (StringUtil.isNotBlank(idStr)) { //编辑
+				Long idLng = Long.valueOf(idStr);
+				$!{model.modelLowerName} = $!{model.uccLowerName}.get(idLng);
+				
+			} else { //新增
+				$!{model.modelLowerName} = $!{model.uccLowerName}.getDefaultModel();				
+			}
+		} catch (Exception e) {
+			log.error("新增/编辑异常", e);
+			request.setAttribute("msg", "新增/编辑异常：" + e.getMessage());
+		}
+		
+		return "edit";
+	}
+	
+	/**
+	 * 保存
+	 * @return 编辑页面
+	 */
+	public String save() {
+		try {
+			$!{model.uccLowerName}.save($!{model.modelLowerName});
+			request.setAttribute("msg", "保存成功");
+		} catch (Exception e) {
+			log.error("保存异常", e);
+			request.setAttribute("msg", "保存异常：" + e.getMessage());
+		}
+		
+		return "edit";
+	}
+	
+	/**
+	 * 删除
+	 * @return 查询界面
+	 */
+	public String delete() {
+		String ids = request.getParameter("ids");
+		try {
+			$!{model.uccLowerName}.delete(ids);
+			request.setAttribute("msg", "删除成功!");
+			
+		} catch (Exception e) {
+			log.error("删除异常", e);
+			request.setAttribute("msg", "删除异常：" + e.getMessage());
+		}
+		
+		return list();
+	}
+	
+	// getter && setter
+	
+	public PageSupport<$!{model.voName}> getPs() {
+		return ps;
+	}
+
+	public void setPs(PageSupport<$!{model.voName}> ps) {
+		this.ps = ps;
+	}
+	
+	public $!{model.voName} get$!{model.voName}() {
+		return $!{model.voLowerName};
+	}
+
+	public void set$!{model.voName}($!{model.voName} $!{model.voLowerName}) {
+		this.$!{model.voLowerName} = $!{model.voLowerName};
+	}
+	
+	public $!{model.modelName} get$!{model.modelName}() {
+		return $!{model.modelLowerName};
+	}
+
+	public void set$!{model.modelName}($!{model.modelName} $!{model.modelLowerName}) {
+		this.$!{model.modelLowerName} = $!{model.modelLowerName};
+	}
+	
+}

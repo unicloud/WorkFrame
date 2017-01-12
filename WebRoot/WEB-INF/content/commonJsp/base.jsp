@@ -63,28 +63,21 @@
     
     <!-- 引用自定义JS -->
     <script src="resources/framejs/layer-2.0/msgdialog.js"></script>
+    <script src="resources/framejs/common/globalParam.js"></script>
     <script src="resources/framejs/common/commonUtil.js"></script>
     <script src="resources/framejs/common/jqxUtil.js"></script>
-    <script src="resources/framejs/common/globalParam.js"></script>
     <!--控件国际化/本地化-->
     <script src="resources/framejs/jqwidgets/globalization/globalize.js"></script>
     <script src="resources/framejs/jqwidgets/globalization/globalize.culture.zh-CN.js"></script>
     <script src="resources/framejs/jqwidgets/globalization/localization.js"></script>
 
-<script type="text/javascript" charset="utf-8" >   
-    //获取当前登录人
-    $.ajax({
-      url : "basic/login!getCurUserInfo.do",
-      dataType : 'json',
-      async : false,  //true为异步,false为同步
-      type : 'POST',
-      success : function(responseText) {
+<script type="text/javascript" charset="utf-8" > 
+    // //获取当前登录人
+    ajaxExecute("basic/login!getCurUserInfo.do",null,function(responseText) {
         curUser = responseText;
-      },
-      error : function(errormessage) {
-          alert("请求出现异常,请重试!");
-      }
-  });
+    },false);
     //获取当前页面的权限，再通过权限初始化各个界面的元素。如果没有权限的，直接不初始化。（每个按钮如果有相对应的关联控件，则需要隐藏对应的控件
     //tab页也同样需要在权限加载完之后，就进行可视化控制
+    //ajax请求，封装的时候
+
 </script>

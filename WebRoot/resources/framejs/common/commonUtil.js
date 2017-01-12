@@ -61,6 +61,18 @@ String.prototype.endWith = function(str){
       return false;
 };
 
+String.prototype.trim = function () {
+    var str = this ;
+    str = str.replace(/^\s /, '');
+    for (var i = str.length - 1; i >= 0; i--) {
+        if (/\S/.test(str.charAt(i))) {
+            str = str.substring(0, i + 1);
+            break ;
+        }
+    }
+    return str;
+};
+
 /**
  * 对 JSON字符串进行 转义符 转义
  * @returns 转义后的JSON字符串
@@ -177,7 +189,10 @@ function runJS(code) {
     new Function(code)();
 }
 
-//运行JS代码字符串
+
+/**
+ *运行JS代码字符串
+ */
 function runEVAL(code) {
     eval(code);
 }
@@ -215,3 +230,56 @@ function clone(obj) {
     return o;
 };
 
+
+/**
+ *AJAX请求封装(注意考虑异步请求的回调函数)
+ *@param ajaxUrl 请求的url
+ *@param paramsData 请求的参数对象
+ *@param successFun 请求的请求成功的回调函数
+ *@param reqAsync true(默认)为异步,false为同步
+ *@param sendMethod POST(默认),GET
+ *@param ajaxTimeout 请求超时设置(单位毫秒)
+ *@param sendDataType json
+ */
+function ajaxExecute(ajaxUrl,paramsData,successFun,reqAsync,sendMethod,ajaxTimeout,sendDataType) {
+    if (ajaxUrl == undefined) {
+        layer.alert("请确认请求的url！", {icon: 2});
+        return;
+    }
+    if (successFun == undefined || successFun == null) {
+        successFun = function(responseText) {
+            layer.alert("请求执行完成！", {icon: 1});
+        }
+    }
+    if (reqAsync == undefined || reqAsync == null) {
+        reqAsync = true; //默认发送异步请求
+    }
+    if (sendMethod == undefined || sendMethod == null) {
+        sendMethod = "POST";
+    }
+    if (ajaxTimeout == undefined || ajaxTimeout == null) {
+        ajaxTimeout = AJAXTimeout; // 超时时间设置,默认为30分钟,单位毫秒
+    }
+    if (sendDataType == undefined || sendDataType == null) {
+        sendDataType = "json";
+    }
+    var JQueryAjaxTimeout = $.ajax({
+          url : ajaxUrl,
+          dataType : sendDataType,
+          async : reqAsync,  //true为异步,false为同步
+          timeout : AJAXTimeout, //超时时间设置，单位毫秒
+          type : sendMethod,
+          success : function(responseText) {
+            successFun(responseText);
+          },
+          error : function(errormessage) {
+              layer.alert("请求出现异常,请重试!", {icon: 2});
+          },
+          complete : function(XMLHttpRequest,status) { //请求完成后最终执行参数
+    　　　　 if(status=='timeout'){//超时,status还有success,error等值的情况
+     　　　　　 JQueryAjaxTimeout.abort();
+    　　　　　  layer.alert("请求超时！",{icon: 2});
+    　　　　 }
+    　　  }
+      });
+};

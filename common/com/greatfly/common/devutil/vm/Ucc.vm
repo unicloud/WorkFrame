@@ -1,0 +1,95 @@
+##ucc模板
+package $!{model.basePackage}.ucc;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.greatfly.common.util.exception.AppException;
+import com.greatfly.common.util.PageSupport;
+import com.greatfly.common.util.ServiceUtil;
+import com.greatfly.common.util.StringUtil;
+import $!{model.basePackage}.domain.$!{model.modelName};
+import $!{model.basePackage}.service.$!{model.serviceName};
+import $!{model.basePackage}.vo.$!{model.voName};
+
+/**
+ * $!{model.domainName}ucc
+ * @author $!{annotation.author}
+ * $!{annotation.createDate}
+ */
+@SuppressWarnings("unchecked")
+@Service
+public class $!{model.uccName} {
+	@Resource
+	private $!{model.serviceName} $!{model.serviceLowerName};
+	
+	/**
+	 * 分页查询
+	 * @param ps 分页对象
+	 * @param vo 查询条件
+	 */
+	public void list(PageSupport<$!{model.voName}> ps, $!{model.voName} vo) {
+		StringBuffer sql = new StringBuffer();
+		// TODO 定义查询Sql
+		
+		// TODO 增加查询条件
+		Map values = new HashMap();
+		
+		$!{model.serviceLowerName}.findBySql(sql.toString(), values, ps, $!{model.voName}.class);
+	}
+	
+	/**
+	 * 通过主键获取$!{model.domainName}
+	 * @param idLng 主键
+	 * @return $!{model.domainName}
+	 */
+	public $!{model.modelName} get(Long idLng) {
+		return $!{model.serviceLowerName}.get(idLng);
+	}
+	
+	/**
+	 * 获取默认的$!{model.domainName}
+	 * @return $!{model.domainName}
+	 */
+	public $!{model.modelName} getDefaultModel() {
+		$!{model.modelName} $!{model.modelLowerName} = new $!{model.modelName}();
+		$!{model.modelLowerName}.$!{model.pkIdSetMethod}(0L);
+		
+		return $!{model.modelLowerName};
+	}
+	
+	/**
+	 * 根据主键是否存在保存/更新$!{model.domainName}
+	 * @param $!{model.modelLowerName} $!{model.domainName}
+	 */
+	public void save($!{model.modelName} $!{model.modelLowerName}) {
+		long id = $!{model.modelLowerName}.$!{model.pkIdGetMethod}();
+		
+		if (id == 0L) { //新增
+			$!{model.serviceLowerName}.save($!{model.modelLowerName});
+		} else { //编辑
+			$!{model.serviceLowerName}.update($!{model.modelLowerName});
+		}
+	}
+	
+	/**
+	 * 删除$!{model.domainName}（物理删除）
+	 * @param ids $!{model.domainName}主键
+	 */
+	public void delete(String ids) {
+		List<Long> idList = ServiceUtil.tran2LongList(ids);
+		if (idList == null) {
+			throw new AppException("查无要删除的$!{model.domainName}");
+		}
+		
+		for (Long id : idList) {
+			$!{model.serviceLowerName}.delete(id);
+		}
+	}
+	
+}

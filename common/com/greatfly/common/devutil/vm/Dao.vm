@@ -1,0 +1,17 @@
+##dao模板
+package $!{model.basePackage}.dao;
+
+import org.springframework.stereotype.Repository;
+
+import com.greatfly.common.dao.impl.BaseHibernateDao;
+import $!{model.basePackage}.domain.$!{model.modelName};
+
+/**
+ * $!{model.domainName}dao
+ * @author $!{annotation.author}
+ * $!{annotation.createDate}
+ */
+@Repository
+public class $!{model.daoName} extends BaseHibernateDao<$!{model.modelName}, Long> {
+
+}

@@ -1,0 +1,24 @@
+##service模板
+package $!{model.basePackage}.service;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.greatfly.common.service.impl.BaseService;
+import $!{model.basePackage}.dao.$!{model.daoName};
+import $!{model.basePackage}.domain.$!{model.modelName};
+
+/**
+ * $!{model.domainName}service
+ * @author $!{annotation.author}
+ * $!{annotation.createDate}
+ */
+@Service
+public class $!{model.serviceName} extends BaseService<$!{model.modelName}, Long> {
+	@Resource
+	public void set$!{model.daoName}($!{model.daoName} $!{model.daoLowerName}) {
+		this.baseDao = $!{model.daoLowerName};
+	}
+	
+}
