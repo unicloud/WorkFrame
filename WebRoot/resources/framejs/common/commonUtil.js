@@ -243,12 +243,12 @@ function clone(obj) {
  */
 function ajaxExecute(ajaxUrl,paramsData,successFun,reqAsync,sendMethod,ajaxTimeout,sendDataType) {
     if (ajaxUrl == undefined) {
-        layer.alert("请确认请求的url！", {icon: 2});
+        layer.msg("请确认请求的url！", {icon: 8});
         return;
     }
     if (successFun == undefined || successFun == null) {
         successFun = function(responseText) {
-            layer.alert("请求执行完成！", {icon: 1});
+            layer.msg("请求执行完成！", {icon: 1});
         }
     }
     if (reqAsync == undefined || reqAsync == null) {
@@ -267,7 +267,7 @@ function ajaxExecute(ajaxUrl,paramsData,successFun,reqAsync,sendMethod,ajaxTimeo
           url : ajaxUrl,
           dataType : sendDataType,
           async : reqAsync,  //true为异步,false为同步
-          timeout : AJAXTimeout, //超时时间设置，单位毫秒
+          timeout : ajaxTimeout, //超时时间设置，单位毫秒
           type : sendMethod,
           success : function(responseText) {
             successFun(responseText);

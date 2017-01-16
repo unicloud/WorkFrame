@@ -9,7 +9,6 @@
 //列名能区分是否是必填字段
 //查询窗的列名出体现出是否有索引
 
-
 var oneResultGridFunc = function(oneResultGrid, tabVars, isShowWindow, isShowWindowBtn, paramArray) {
     
     // 获取 oneResultGrid 的信息

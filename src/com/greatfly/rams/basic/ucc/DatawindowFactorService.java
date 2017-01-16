@@ -34,7 +34,7 @@ public class DatawindowFactorService {
 	 */
 	public void list(PageSupport<DatawindowFactorVo> ps, DatawindowFactorVo vo) {
 		StringBuffer sql = new StringBuffer();
-		// TODO 定义查询Sql
+		// TODO 定义查询Sql  
 		
 		// TODO 增加查询条件
 		Map values = new HashMap();

@@ -96,4 +96,23 @@ public class LoginAction extends BaseAction {
     	userObject.put("fullName", session.getAttribute(CommonConstant.FULL_NAME));
     	output(userObject.toJSONString(), log);
     }
+
+    @Description("用户密码修改")
+    public void resetPwd() {
+        String jsonString = "";
+        try {
+            String originalPwd = request.getParameter("originalPwd");
+            String password = request.getParameter("newPwd");
+            String pcode = (String) request.getSession().getAttribute(CommonConstant.PCODE);
+            jsonString = loginService.resetPassword(pcode, originalPwd, password);
+        } catch (Exception e) {
+            if (e.getMessage().startsWith("Incorrect result size: expected 1, actual 0")) {
+                jsonString = CommonMsgOutput.getResponseJson(false, 0, "0", "密码修改失败！用户名不存在！", "update");
+            } else {
+                jsonString = CommonMsgOutput.getResponseJson(false, 0, "0", "密码修改失败！" + e.getMessage(), "login");
+            }
+        } finally {
+            output(jsonString, log);
+        }
+    }
 }

@@ -72,12 +72,8 @@
     <script src="resources/framejs/jqwidgets/globalization/localization.js"></script>
 
 <script type="text/javascript" charset="utf-8" > 
-    // //获取当前登录人
+    //获取当前用户信息
     ajaxExecute("basic/login!getCurUserInfo.do",null,function(responseText) {
         curUser = responseText;
     },false);
-    //获取当前页面的权限，再通过权限初始化各个界面的元素。如果没有权限的，直接不初始化。（每个按钮如果有相对应的关联控件，则需要隐藏对应的控件
-    //tab页也同样需要在权限加载完之后，就进行可视化控制
-    //ajax请求，封装的时候
-
 </script>

@@ -13,6 +13,15 @@
       <jsp:include page="/WEB-INF/content/commonJsp/base.jsp" />
       <style type="text/css">
           .jqx-tabs-content,#tabDiv{
+            background-size: 100%; 
+            background:url(resources/images/Login2.jpg);
+          }
+          .jqx-widget-content {
+            width: 100%;
+            height: 100%;
+          }
+          #paneltree_0 {
+            background-size: 100%; 
             background:url(resources/images/Login2.jpg);
           }
       </style>
@@ -47,7 +56,6 @@
             $("#userName").html(curUser.userName+curUser.pcode);
             $("#dutyName").html(curUser.dutyName);
 
-          
             $("#home").jqxButton({theme: sysTheme});
             
             $("#home").click(function() {
@@ -67,7 +75,7 @@
                       window.location.href="login.jsp";
                   },
                   error : function(errormessage) {
-                      alert("请求出现异常,请重试!");
+                      layer.alert("请求出现异常,请重试!", {icon:2});
                   }
               });
             });
@@ -75,7 +83,15 @@
             $("#help").jqxButton({theme: sysTheme});
             
             $("#help").click(function() {
-              layer.alert("打开帮助");
+              var length = $('#tabDiv').jqxTabs('length');
+              if (length == 0) {
+                layer.msg("打开当前页面的帮助!",{icon:1});
+                return;
+              }
+              var index = $('#tabDiv').jqxTabs('selectedItem'); 
+              var title = $("#tabDiv").jqxTabs("getTitleAt",index);
+              var pageId = $("#tabDiv").jqxTabs("getContentAt", index)[0].lastChild.id;
+              layer.msg("打开\""+title+"("+pageId+")\"页面帮助", {icon:1});
             });
         });
         
@@ -92,6 +108,14 @@
             $("#tree_" + i).jqxTree({
               theme: sysTheme, toggleMode: "click", source: decodeMenuJson(menuArr[i].children)
             });
+            $("#tree_" + i).on('itemClick',function (event) {
+                var args = event.args;
+                var item = $("#" + event.target.id).jqxTree('getItem', args.element);
+                if (item.value != null) { //判断叶子节点
+                  layer.msg(item.label+item.id+item.value,{icon:1});
+                }
+            });
+
             $("#tree_" + i).on('select',function (event) {
                 var args = event.args;
                 var item = $("#" + event.target.id).jqxTree('getItem', args.element);
@@ -112,7 +136,7 @@
           var html = "<div id='bar_" + index + "'><div style='margin-top:2px;float:left;'><img alt='" + menu.text + "' src='resources/images/icons/application_view_gallery.png'></div><div style='margin-left:10px;float:left;'><strong>" + menu.text + "</strong></div></div>";
           html = html + "<div id='barContent_" + index + "'>";
           //创建二级菜单树div
-          html = html + "<div id='tree_" + index + "' style='border: none;'></div>";
+          html = html + "<div id='tree_" + index + "' class='menuTree' style='border: none;height:100%;weight:100%;'></div>";
           html = html + "</div>";
           return html;
         }

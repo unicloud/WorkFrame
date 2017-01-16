@@ -122,112 +122,18 @@ public final class CommonMsgOutput {
         jsonObject.put("total", total);
         jsonObject.put("rows", rows);
         jsonObject.put("msg", getErrorMsg(msg));
-        jsonObject.put("operationType", operationType);        
+        jsonObject.put("operationType", operationType);
         return jsonObject.toJSONString(jsonObject, SerializerFeature.WriteMapNullValue);
     }
     
     /**
      * 返回 错误信息的文字描述
      * @param msg 错误值
-     *  -1 : 后台出现异常,请联系系统管理员
-     *  0 : 操作成功!
-     *  1 : 没有查询到数据窗口的配置信息,请联系系统管理员!    -- datawindowFactor == null
-     *  2 : 传入参数为空或者格式错误,请联系系统管理员!
-     *  3 : 执行结果有错误 
-     *  4 : 数据删除成功
-     *  5 : 数据删除失败,没有找到对应的数据行!
-     *  6 : 数据更新成功
-     *  7 : 数据添加成功
-     *  8 : 数据窗口配置出错,请联系系统管理员!
-     *  9 : 上传失败,文件过大或者网络过慢,请重新进行上传!
-     *  10 : 查询结果为空,请进行维护!
-     *  11 : 数据窗口配置信息中更新的表名称为空,请联系系统管理员!
-     *  12 : 插入文件失败!
-     *  13 : 生成语句失败
-     *  14　：数据窗口配置信息未配置查询语句,请联系系统管理员!
-     *  15 : 传入参数不是有效的JSON字符串
-     *  16 : 数据更新失败,没有找到对应的数据行!
-     *  17 : 用户名不能为空,请进行输入!
-     *  18 : 密码不能为空,请进行输入!
-     *  19 : 当前用户状态为[删除],无法进行登陆!
-     *  20 : 导入失败，导入文件格式出错!
-     *  21 : 参数中主键不存在,请联系系统管理员(PKID列不存在)
-     *  22 : 数据保存失败!
-     *  23 : 请先维护帐套信息!
-     *  24 : 公共数据窗不允许删除!
-     *  25 : 数据窗并非本人私有,请联系系统管理员!
-     *  26 : 没有查询到结果信息!
-     *  27 : 用户信息查询为空,请先进行维护!
-     *  28 : 未从数据库中查询到用户所属帐套信息,请联系系统管理员!
      * @return String 返回的信息
      */
     public static String getErrorMsg(String msg) {
-        switch (msg) {
-            case "-1":
-                return "后台出现异常,请联系系统管理员!";
-            case "0":
-                return "操作成功!";
-            case "1":
-                return "没有查询到数据窗口的配置信息,请联系系统管理员!";
-            case "2":
-                return "传入参数为空或者格式错误,请联系系统管理员!";
-            case "3":
-                return "执行结果有错误!";
-            case "4":
-                return "数据删除成功!";
-            case "5":
-                return "数据删除失败,没有找到对应的数据行!";
-            case "6":
-                return "数据更新成功!";
-            case "7":
-                return "数据添加成功!";
-            case "8":
-                return "数据窗口配置出错,请联系系统管理员!";
-            case "9":
-                return "上传失败,文件过大或者网络过慢,请重新进行上传!";
-            case "10":
-                return "查询结果为空,请进行维护!";
-            case "11":
-                return "数据窗口配置信息中更新的表名称为空,请联系系统管理员!";
-            case "12":
-                return "插入文件失败!";
-            case "13":
-                return "生成语句失败!";
-            case "14":
-                return "数据窗口配置信息未配置查询语句,请联系系统管理员!";
-            case "15":
-                return "传入参数不是有效的JSON字符串";
-            case "16":
-                return "数据更新失败,没有找到对应的数据行!";
-            case "17":
-                return "用户名不能为空,请进行输入!";
-            case "18":
-                return "密码不能为空,请进行输入!";
-            case "19":
-                return "当前用户状态为[删除],无法进行登陆!";
-            case "20":
-                return "导入失败，导入文件格式出错!";
-            case "21":
-                return "参数中主键不存在,请联系系统管理员!";
-            case "22":
-                return "数据保存失败!";
-            case "23":
-                return "请先维护帐套信息!";
-            case "24":
-                return "公共数据窗不允许删除!";
-            case "25":
-                return "数据窗并非本人私有,请联系系统管理员!";
-            case "26":
-                return "没有查询到结果信息!";
-            case "27":
-                return "用户信息查询为空,请先进行维护!";
-            case "28":
-                return "未从数据库中查询到用户所属帐套信息,请联系系统管理员!";
-            case "29":
-                return "未找到对应工号的员工信息!";
-            default:
-                return msg;
-        }
+    	//特别针对oracle抛出的错误进行修改
+       return msg;
     }
 
     /**

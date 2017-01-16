@@ -10,7 +10,7 @@
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <base href="${path }">
-<html> 
+<html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>客户管理系统</title>
@@ -21,6 +21,7 @@
     <meta http-equiv="description" content="客户管理系统">
     <link rel="icon" href="resources/images/icons/finance_rams.ico" type="image/x-icon">
     <script src="resources/framejs/jquery/jquery-1.11.1.min.js"></script>
+    <script src="resources/framejs/layer-2.0/layer.js"></script>
     <style type="text/css">
       html{
           width: 100%;
@@ -103,12 +104,12 @@
             var userName = $("#userName").val();
             var password = $("#password").val();
             if (userName.trim() == "") {
-              alert("请输入用户名！");
+              layer.msg("请输入用户名！", {icon:8});
               $("#userName").focus();
               return;
             }
             if (password.trim() == "") {
-              alert("请输入密码！");
+              layer.msg("请输入密码！", {icon:8});
               $("#password").focus();
               return;
             }
@@ -125,11 +126,11 @@
                   if (responseText.success) {
                     window.location.href="index.jsp"; 
                   } else {
-                    alert(responseText.msg);
+                    layer.alert(responseText.msg, {icon:8});
                   }
                 },
                 error : function(errormessage) {
-                    alert("请求出现异常,请重试!");
+                    layer.alert("请求出现异常,请重试!", {icon:2});
                 }
             });
         };
@@ -149,10 +150,10 @@
         <form action='basic/login!login.do' method='POST' name='loginForm'>
           <table>
             <tr>
-              <td colspan=2><input type="text" required="required" class="inputField" placeholder="用户名" id="userName" maxlength='20' name="user"></input></td>
+              <td colspan=2><input type="text" required="required" class="inputField" placeholder="用户名" value="10000" id="userName" maxlength='20' name="user"></input></td>
             </tr>
             <tr>
-              <td colspan=2><input type="password" required="required" class="inputField" placeholder="密码" id="password" maxlength='20' name="pwd"></input></td>
+              <td colspan=2><input type="password" required="required" class="inputField" placeholder="密码" value="123456" id="password" maxlength='20' name="pwd"></input></td>
             </tr>
             <tr>
               <td><input type="button" class="btn" value="登录" onclick="loginBtnClick()" id="loginBtn"></input></td>
