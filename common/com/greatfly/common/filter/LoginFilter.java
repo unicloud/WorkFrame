@@ -93,6 +93,9 @@ public class LoginFilter implements Filter {
         if (urlStr.indexOf("login.jsp") >= 0 || urlStr.indexOf("login.do") >= 0 || urlStr.indexOf("Login.jpg") >= 0) {
             return false;
         }
+        if (urlStr.endsWith("layer.js") || urlStr.endsWith("layer.css") || urlStr.endsWith("finance_rams.ico")) {
+        	return false;
+        }
         //登录页面需要加载这个js,故不作过滤
         if (urlStr.indexOf("jquery-1.11.1.min") >= 0) {
         	return false;

@@ -22,6 +22,7 @@
     <link rel="icon" href="resources/images/icons/finance_rams.ico" type="image/x-icon">
     <script src="resources/framejs/jquery/jquery-1.11.1.min.js"></script>
     <script src="resources/framejs/layer-2.0/layer.js"></script>
+    <script src="resources/framejs/layer-2.0/msgdialog.js"></script>
     <style type="text/css">
       html{
           width: 100%;
