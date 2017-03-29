@@ -4,7 +4,7 @@
 <html>
   <head>
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <title>客户管理系统</title>
+      <title>协同开发管理系统</title>
       <meta http-equiv="pragma" content="no-cache">
       <meta http-equiv="cache-control" content="no-cache">
       <meta http-equiv="expires" content="0">

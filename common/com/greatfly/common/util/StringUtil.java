@@ -16,6 +16,9 @@ import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
 import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
 
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.asn1.misc.MiscObjectIdentifiers;
+
+import sun.security.util.Length;
 
 import com.greatfly.common.util.exception.AppException;
 
@@ -621,6 +624,43 @@ public final class StringUtil {
         }  
         return strBuf.toString();
     }  
+    
+    /** 截取字符串中flag标签中的子字符串
+     *  @param str 字符串
+     *  @param flag 标记 起始标记为 <flag>、[flag] or <flag XXXXXX>、[flag XXXXXX];结束标记</>、[/]、</flag>、[/flag]
+     *  @return flag标记中的子字符串
+     */
+    public static String getSubString(String str, String flag) {
+    	String subString = "";
+    	if (isBlank(str)) {
+    		return "";
+    	}
+    	String flag1 = "<";
+    	String flag2 = ">";
+    	int ll_1 = -1;
+    	int ll_2 = -1;
+    	if (str.indexOf(flag1 + flag) < 0) {
+    		flag1 = "[";
+    		flag2 = "]";
+        	if (str.indexOf(flag1 + flag) < 0) {
+        		return "";
+        	}
+    	}
+    	String midString = str.substring(str.indexOf(flag1 + flag));
+    	ll_1 = midString.indexOf(flag1); //应该都是0
+    	ll_2 = midString.indexOf(flag2);
+    	String tempStr = midString.substring(ll_1+1, ll_2);
+    	if (tempStr.indexOf(" ") >0 && ll_1 >=0 && ll_2 > 0) {
+    		midString = flag1 + flag +flag2 + midString.substring(ll_2+2);
+    	}
+    	ll_1 = midString.indexOf(flag1 + flag + flag2);
+    	ll_2 = midString.indexOf(flag1 + "/" + flag + flag2);
+    	if (ll_2 < 0) {
+    		ll_2 = midString.indexOf(flag1 + "/" + flag2);
+    	}
+    	subString = midString.substring(ll_1 + flag.length() + 2, ll_2);
+    	return subString;
+    }
     
 
 }

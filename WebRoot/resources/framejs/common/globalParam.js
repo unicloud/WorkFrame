@@ -12,13 +12,13 @@ var sysTheme = 'energyblue';
 var AJAXTimeout = 1800000; // 超时时间设置,默认为30分钟,单位毫秒
 
 // 分页 页数 下拉列表
-var pagesizeoptions = [ "50", "100", "200" ];
+var pagesizeoptions = [ "100", "500", "2000", "10000" ];
 //分页页面初始页大小
 var commonpageInitSize = 20;
 
 var allFieldsGridRowNum = 3;
 
-var commonpagesizeoptions = [ "20", "1000", "10000" ];
+var commonpagesizeoptions = [ "100", "500", "2000", "10000" ];
 
 // 设置默认语言
 var defaultCulture = "zh-CN";

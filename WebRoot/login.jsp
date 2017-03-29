@@ -13,15 +13,16 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>客户管理系统</title>
+    <title>协同开发系统</title>
     <meta http-equiv="pragma" content="no-cache">
     <meta http-equiv="cache-control" content="no-cache">
     <meta http-equiv="expires" content="0">
     <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
-    <meta http-equiv="description" content="客户管理系统">
+    <meta http-equiv="description" content="协同开发系统">
     <link rel="icon" href="resources/images/icons/finance_rams.ico" type="image/x-icon">
     <script src="resources/framejs/jquery/jquery-1.11.1.min.js"></script>
     <script src="resources/framejs/layer-2.0/layer.js"></script>
+    <script src="resources/framejs/layer-2.0/msgdialog.js"></script>
     <style type="text/css">
       html{
           width: 100%;
@@ -146,7 +147,7 @@
 </head>
 <body>
     <div id="login">
-        <h1>客户管理系统</h1>
+        <h1>协同开发系统</h1>
         <form action='basic/login!login.do' method='POST' name='loginForm'>
           <table>
             <tr>

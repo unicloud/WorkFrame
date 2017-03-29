@@ -15,6 +15,7 @@ import com.greatfly.common.util.JsonUtil;
 import com.greatfly.common.util.msgconverter.CommonMsgOutput;
 import com.greatfly.common.vo.RespVo;
 import com.greatfly.rams.basic.service.LoginService;
+import com.sun.faces.el.ELConstants;
 
 /**
  * 登陆Action
@@ -62,6 +63,8 @@ public class LoginAction extends BaseAction {
         } catch (Exception e) {
         	if (e.getMessage().startsWith("Incorrect result size: expected 1, actual 0")) {
         		jsonString = CommonMsgOutput.getResponseJson(false, 0, "0", "登录失败！用户名不存在！", "login");
+        	} else if (e.getMessage().startsWith("Could not open Hibernate Session for transaction")) {
+        		jsonString = CommonMsgOutput.getResponseJson(false, 0, "0", "登录失败！后台数据库无法连接，请联系管理员！", "login");
         	} else {
         		jsonString = CommonMsgOutput.getResponseJson(false, 0, "0", "登录失败！" + e.getMessage(), "login");
         	}

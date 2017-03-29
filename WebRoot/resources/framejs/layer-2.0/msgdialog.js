@@ -2,27 +2,35 @@
 //注意提示信息的转换，都在这个地方统一处理
 
 //提示
-var msg = function() {
-    layer.alert("",{icon:8});
+var msginfo = function(msgInfo, iconNum) {
+    if (iconNum == undefined) {
+        iconNum = 1;
+    }
+    layer.alert(msgInfo,{icon:iconNum});
+};
+
+//不需要点确认按钮的提示
+var msgtips = function(msgInfo) {
+    layer.msg(msgInfo,{icon:1});
 };
 
 //警告
-var warn = function() {
+var warninfo = function(warnInfo) {
+    layer.alert(warnInfo,{icon:8});
+};
 
+//不需要点确认按钮的警告
+var warntips = function(warnInfo) {
+    layer.msg(warnInfo,{icon:8});
 };
 
 //错误信息提示
-var error = function() {
-
+var errorInfo = function(errorInfo) {
+    layer.alert(warnInfo,{icon:2});
 };
 
 //确认框
 var confirm = function() {
-
-};
-
-//不需要点确认按钮的提示
-var msgtips = function() {
 
 };
 

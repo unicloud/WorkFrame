@@ -58,7 +58,7 @@ public final class DevelopUtil {
 		createCode(author, cls);
 		
 		//生成代码方法2：指定包
-//		String packageName = "com.xmair.rams.cargo.tax.domain";
+//		String packageName = "com.greatlfy.rams.cargo.tax.domain";
 //		getDomainConfig(packageName);
 //		createCode(author, packageName);
 	}
@@ -82,7 +82,7 @@ public final class DevelopUtil {
 	/**
 	 * 根据指定包名自动生成代码
 	 * @param author 作者
-	 * @param packageName 包名，可以是到模块名，如com.xmair.rams.blanktict，也可以是到实体层，如com.xmair.rams.blanktict.domain
+	 * @param packageName 包名，可以是到模块名，如com.greatlfy.rams.blanktict，也可以是到实体层，如com.greatlfy.rams.blanktict.domain
 	 */
 	private static void createCode(String author, String packageName) {
 		//初始化

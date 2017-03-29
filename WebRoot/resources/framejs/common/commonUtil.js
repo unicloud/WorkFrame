@@ -61,6 +61,7 @@ String.prototype.endWith = function(str){
       return false;
 };
 
+
 String.prototype.trim = function () {
     var str = this ;
     str = str.replace(/^\s /, '');
@@ -71,6 +72,37 @@ String.prototype.trim = function () {
         }
     }
     return str;
+};
+
+/**
+ * 获取带标记子字符串
+ * 支持 ...[F]AAA[/]...、...[F]AAA[/F]...、...<F>AAA</>...、...<F>AAA</F>...格式
+ * @returns 标记中所带的子字符串AAA
+ */
+var getSubStr = function(str,flag) {
+    if ( str == null || str == "" || str == undefined) {
+      return "";
+    }
+    var ls_flag1 ='<';
+    var ls_flag2 ='>';
+    if (str.indexOf(ls_flag1 + flag + ls_flag2) < 0) {
+      ls_flag1 = '[';
+      ls_flag2 = ']';
+    }
+    var ll_1 = str.indexOf(ls_flag1 + flag + ls_flag2);
+    if (ll_1 >= 0) {
+      str = str.substring(ll_1);
+      ll_1 = 0 ;
+    }
+    var ll_2 = str.indexOf(ls_flag1 + "/" + flag + ls_flag2);
+    if (ll_2 < 0) {
+      ll_2 = str.indexOf(ls_flag1 + "/" + ls_flag2);
+    }
+    var subStr = "";
+    if (ll_2 > ll_1 && ll_1 >= 0) {
+       subStr = str.substring(ll_1+3,ll_2);
+    }
+    return subStr;
 };
 
 /**
@@ -87,17 +119,6 @@ String.prototype.escapeSpecialChars = function() {
     .replace(/[\r]/g, '\\r')
     .replace(/[\t]/g, '\\t');
 };
-
-
-//String.prototype.startWith=function(str){
-//  var reg=new RegExp("^"+str);
-//  return reg.test(this);
-//};
-//
-//String.prototype.endWith=function(str){
-//  var reg=new RegExp(str+"$");
-//  return reg.test(this);
-//};
 
 // 获取jqx数字框
 function getjqxNumberInputVal(tablename, fieldArray) {
