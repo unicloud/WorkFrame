@@ -207,6 +207,77 @@ var createToolBarButton = function(container, value, icon, float,width,height, I
     return button;
 };
 
+/**
+ * 创建用户控件（主要用于查询或者编辑窗口初始化）
+ * @param containerId 容器ID
+ * @param item 控件项
+ * @param floatDirect 浮动方向
+ * @param id 控件ID
+ * @param theme 主题
+ * @return 编辑控件
+ */
+var createUserCtrl = function(containerId, item, floatDirect, Id, theme) {
+    var container = $("#" + containerId);
+    if (item == [] || item == undefined) {
+        return;
+    }
+    if (floatDirect == undefined) {
+        floatDirect = "left";
+    }    
+    if (Id == undefined) {
+        Id = containerId + item.datafield;
+    }
+    if (theme == undefined) {
+        theme = sysTheme;
+    }
+    var html = "<div style='margin: 5px 10px;float:" + floatDirect + ";width:210px;height:30px;background:rgba(200, 200, 200, 0.2);'>";
+    html = html + "<div style='float:left;text-align:justify;min-width:80px;max-width:80px;'>" + item.text + ":</div>";
+    if (item.columntype == "textbox") {
+        html = html + "<input type='text' id='" + Id + "' style='float:left;' />";
+    } else { 
+        html = html + "<div id='" + Id + "' style='float:left;'></div>";
+    }
+    html = html + "</div>";
+    var userCtrl = $(html);
+    container.append(userCtrl);
+    var editCtrl = $("#" + Id);
+    if (item.columntype == "textbox") {
+        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: '120px' , maxLength: item.dataLength });
+    } else if (item.columntype == "numberinput"){ 
+        editCtrl.jqxNumberInput({theme: sysTheme,  height: "20px", width: '120px',decimalDigits : 0, spinButtons : false, groupSeparator : '', inputMode : 'simple'});
+    } else if (item.columntype == "datetimeinput"){ 
+        editCtrl.jqxDateTimeInput({ theme: sysTheme,formatString: item.format, width: "120px", height: "20px", culture: "zh-CN" });
+    } else if (item.columntype == "dropdownList") {
+        editCtrl.jqxDropDownList({theme: sysTheme, width: '120px', height: "20px", placeHolder:'',
+            source: item.comboxList, displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: true,
+        }); 
+    } else {
+        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: "60px" , maxLength: "100" });
+    }
+};
+
+/**
+ * 生成灵活查询Grid的数据行 -- 由全局变量设置默认生成多少行 -- 同时用户可自行添加行]
+ * @param flexGridDataFields 全字段GRID的datafields 属性值
+ * @param rowNum 要生成的行数
+ */
+function createFlexGridRowData(flexGridDataFields, rowNum) {
+    var customdata = new Array();
+    var trowData ;
+    for (var i = 0; i < rowNum; i++) {
+        trowData = "{";
+        $.each(flexGridDataFields, function(i) {
+            var columnCotent =  flexGridDataFields[i];
+            var tcolumnName = columnCotent.name;
+            trowData = trowData + "\"" + tcolumnName + "\" : \"\"," ;
+        });
+        trowData = trowData.substring(0,trowData.lastIndexOf(','));
+        trowData = trowData + "}";
+        customdata.push(JSON.parse(trowData));
+    }
+    return customdata;
+};
+
 //权限控制思路。判断如果是发布版，则进入各个页面之前获取页面的权限，根据权限初始化页面，否则不加载页面
 //根据权限加载页面时区分tab页权限，按钮权限，右键菜单权限
 //考虑对于嵌套JSP的情况和iframe加载页面的情况，权限的控制处理

@@ -80,6 +80,12 @@
               });
             });
 
+            $("#uqdatePwd").jqxButton({theme: sysTheme});
+            
+            $("#uqdatePwd").click(function() {
+              createTab("个人信息", "0", "userInfo");
+            });
+
             $("#help").jqxButton({theme: sysTheme});
             
             $("#help").click(function() {
@@ -180,7 +186,7 @@
                   return;
               }
           }
-          if (label == "首页") {
+          if (label == "首页" || label == "个人信息") {
             //新建
             $("#tabDiv").jqxTabs("addFirst", label, "<iframe id='" + url + "' width='100%' height='100%' frameborder='0' src='" + url + "' />");
             $("#tabDiv").jqxTabs("ensureVisible", 0);
@@ -211,6 +217,8 @@
               <span id="dutyName">系统管理员</span>
               |
               <div id="logout" style="display:inline;"><img src="resources\images\icons\user_delete.png"/>&nbsp;注销</div>
+              |
+              <div id="uqdatePwd" style="display:inline;"><img src="resources\images\icons\key.png"/>&nbsp;密码修改</div>
               |
               <div id="help" style="display:inline;"><img src="resources\images\icons\help.png"/>&nbsp;帮助</div>&nbsp;
             </div>

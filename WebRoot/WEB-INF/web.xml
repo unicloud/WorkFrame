@@ -129,6 +129,15 @@
          <servlet-name>homePage</servlet-name> 
          <url-pattern>/homePage</url-pattern> 
      </servlet-mapping>
+    <!-- 用户信息 -->
+     <servlet>
+         <servlet-name>userInfo</servlet-name> 
+         <jsp-file>/WEB-INF/content/userInfo.jsp</jsp-file> 
+     </servlet> 
+     <servlet-mapping>
+         <servlet-name>userInfo</servlet-name> 
+         <url-pattern>/userInfo</url-pattern> 
+     </servlet-mapping>
     <!-- 客户汇总信息 -->
     <servlet>
          <servlet-name>customerScore</servlet-name> 

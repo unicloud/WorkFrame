@@ -36,6 +36,13 @@ a:hover {
 	text-decoration: underline;
 }
 
+.indexField {
+    color: blue;
+}
+
+.requirdField {
+    color: red;
+}
 /* 设置样式 */
 /*主页头部，主页背景 颜色、图片
  * 主体部分  Grid的表头、列高、列宽、字体（显示字体，编辑字体）、特殊颜色标记
