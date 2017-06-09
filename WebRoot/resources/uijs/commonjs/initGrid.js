@@ -47,11 +47,11 @@ var queryDwInfo = function(gridVars, type) {
 };
 
 /**
- * @Title initPagingGridFun 初始化分页结果窗
+ * @Title initPagingGrid 初始化分页结果窗
  * @param gridId grid
  * @param gridVars grid参数
  */
-var initPagingGrid = function(gridId, gridVars) {
+var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
     if (gridVars.resulDwInfos.length == 0) {
         queryDwInfo(gridVars);
     }
@@ -60,7 +60,7 @@ var initPagingGrid = function(gridId, gridVars) {
         return;
     }
     var columns = clone(gridVars.resulDwInfos.disColumns);
-    for (var i in columns) {
+    for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
         //如果是非空字段
         if (item.notnull) {
@@ -72,11 +72,36 @@ var initPagingGrid = function(gridId, gridVars) {
             filedItem.type = "number";
         } else if (item.columntype == "datetimeinput") {
             filedItem.type = "date";
+            filedItem.format = item.cellsformat;
+        } else if (item.columntype == "dropdownlist") {
+            item.editable = true;
+            var txtFiledItem = {"name": item.datafield + "TXT","type" :"string",
+            "value": item.datafield, "values": {"name":"TEXT", "value":"VALUE", "source":item.comboxList}};
+            gridVars.resultDatafields.push(txtFiledItem);
+            item.displayfield = item.datafield + "TXT";
+            var testList = item.comboxList;
+            item.createeditor = function(row, value, editor) {
+                var autoHeight = true;
+                if (testList.length >= 6) {
+                    autoHeight = false;
+                }
+                editor.jqxDropDownList({source: testList ,displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: autoHeight});
+            };
+            filedItem.type = "string";
         } else {
             filedItem.type = "string";
         }
         gridVars.resultColumns.push(item);
         gridVars.resultDatafields.push(filedItem);
+        if (item.columntype == "dropdownlist") {
+
+            var txtColumnItem = {};
+            txtColumnItem.displayfield = item.datafield;
+            txtColumnItem.columntype = "string";
+            txtColumnItem.hidden = true;
+            txtColumnItem.text = item.text;
+            gridVars.resultColumns.push(txtColumnItem);
+        }
     }
 
     // 设置结果集Grid查询的数据
@@ -162,6 +187,18 @@ var initPagingGrid = function(gridId, gridVars) {
     $("#" + gridId).on('contextmenu',function() {
         return false;
     });
+
+    if (hasEditWindow) {
+        initEditWindow(gridId + "EditWindow", gridVars);
+    }
+};
+
+/**
+ * @Title initNoPagingGrid 初始化不分页结果窗
+ * @param gridId grid
+ * @param gridVars grid参数
+ */
+var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
 };
 
 /**
@@ -171,7 +208,28 @@ var initPagingGrid = function(gridId, gridVars) {
  * @param canSave 是否提供保存按钮
  */
 var initEditWindow = function(containerId, gridVars, canSave) {
+    
     //弹出窗上的控件ID需要带一个随机数，以确保同一个页面上的控件ID可以区别开
+    $("#" + containerId).jqxWindow({
+        theme : sysTheme,
+        autoOpen: false,
+        isModal: true,
+        height: "90%",
+        width: "90%",
+        resizable: true
+    });
+    if (gridVars.resulDwInfos.length == 0) {
+        queryDwInfo(gridVars);
+    }
+    //依然为空，则不往下执行
+    if (gridVars.resulDwInfos.length == 0) {
+        return;
+    }
+    var columns = clone(gridVars.resulDwInfos.disColumns);
+    for (var i= 0; i< columns.length; i++) {
+        var item =  columns[i];
+        createUserCtrl(containerId + "Content", item);
+    }
 };
 
 /**
@@ -191,7 +249,7 @@ var initNormQueryWindow = function(containerId, gridVars, canSave) {
         return;
     }
     var columns = clone(gridVars.queryDwInfos.disColumns);
-    for (var i in columns) {
+    for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
         createUserCtrl(containerId, item);
     }
@@ -214,7 +272,7 @@ var initFlexQueryGrid = function(gridId, gridVars) {
 
     var columns = clone(gridVars.queryDwInfos.disColumns);
     //datafields需要做处理： 数值、日期类型都得处理成文本类型
-    for (var i in columns) {
+    for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
         if (item.columntype == "numberinput" || item.columntype == "datetimeinput") {
             item.columntype = "textbox";
@@ -272,4 +330,3 @@ var initFlexQueryGrid = function(gridId, gridVars) {
         columns : gridVars.queryColumns
     });
 };
-

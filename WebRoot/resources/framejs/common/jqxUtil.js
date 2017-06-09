@@ -246,11 +246,14 @@ var createUserCtrl = function(containerId, item, floatDirect, Id, theme) {
     } else if (item.columntype == "numberinput"){ 
         editCtrl.jqxNumberInput({theme: sysTheme,  height: "20px", width: '120px',decimalDigits : 0, spinButtons : false, groupSeparator : '', inputMode : 'simple'});
     } else if (item.columntype == "datetimeinput"){ 
-        editCtrl.jqxDateTimeInput({ theme: sysTheme,formatString: item.format, width: "120px", height: "20px", culture: "zh-CN" });
-    } else if (item.columntype == "dropdownList") {
-        editCtrl.jqxDropDownList({theme: sysTheme, width: '120px', height: "20px", placeHolder:'',
-            source: item.comboxList, displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: true,
-        }); 
+        editCtrl.jqxDateTimeInput({ theme: sysTheme,formatString: item.cellsformat, width: "120px", height: "20px", culture: "zh-CN" });
+    } else if (item.columntype == "dropdownlist") {
+        editCtrl.jqxDropDownList({theme: sysTheme, checkboxes: true, width: '120px', height: "20px", placeHolder:'',
+            source: item.comboxList, displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: true
+        });
+        if (item.comboxList.length >= 6) {
+            editCtrl.jqxDropDownList({autoDropDownHeight: false, dropDownHeight: "160px"})
+        }
     } else {
         editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: "60px" , maxLength: "100" });
     }

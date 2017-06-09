@@ -14,8 +14,8 @@
 
 <script type="text/javascript">
     var oneResultGridVars = {
-        queryDwName  : "DW02_MD_CABIN_GRADE_RESULT",
-        resultDwName : "DW02_MD_CABIN_GRADE_RESULT",
+        queryDwName  : "DW03_PT_CONTROL_LIBRARY_QUERY",
+        resultDwName : "DW03_PT_CONTROL_LIBRARY_RESULT",
         //查询窗口
         queryDwInfos : [],
         queryDatafields : [],
@@ -69,6 +69,12 @@
           </div>
       </div>
     </div>
+    <div id="tab1_oneResultGridEditWindow">
+      <div id='tab1_oneResultGridEditWindowHeader'>
+        <span>信息编辑窗口</span>
+      </div>
+      <div id = 'tab1_oneResultGridEditWindowContent'></div>
+    </div>
     <script type="text/javascript">
         $("#tabsMain").jqxTabs({theme : sysTheme,width: "100%", height: "100%" });
 
@@ -85,7 +91,7 @@
     <script type="text/javascript">
         initFlexQueryGrid("tab1_flexQueryGrid", oneResultGridVars);
         initNormQueryWindow("tab1_normQueryGrid", oneResultGridVars);
-        initPagingGrid("tab1_oneResultGrid", oneResultGridVars);
+        initPagingGrid("tab1_oneResultGrid", oneResultGridVars, true);
         initTab1Btns();
     </script>
 

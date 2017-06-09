@@ -155,7 +155,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
                 if (comboxList.size() == 0) {
                     colObject.put("columntype", "textbox");
                 } else {
-                    colObject.put("columntype", "dropdownList");
+                    colObject.put("columntype", "dropdownlist");
                     colObject.put("comboxList", comboxList);
                 }
             } else {
@@ -307,7 +307,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
         		if (comboxList.size() == 0) {
         			colObject.put("columntype", "textbox");
         		} else {
-            		colObject.put("columntype", "dropdownList");
+            		colObject.put("columntype", "dropdownlist");
         			colObject.put("comboxList", comboxList);
         		}
         	} else {

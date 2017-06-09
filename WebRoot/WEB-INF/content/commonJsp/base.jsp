@@ -76,4 +76,6 @@
     ajaxExecute("basic/login!getCurUserInfo.do",null,function(responseText) {
         curUser = responseText;
     },false);
+
+    //加载当前页面权限(含Tab\Btn权限) TODO
 </script>

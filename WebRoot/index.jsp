@@ -114,21 +114,21 @@
             $("#tree_" + i).jqxTree({
               theme: sysTheme, toggleMode: "click", source: decodeMenuJson(menuArr[i].children)
             });
-            $("#tree_" + i).on('itemClick',function (event) {
-                var args = event.args;
-                var item = $("#" + event.target.id).jqxTree('getItem', args.element);
-                if (item.value != null) { //判断叶子节点
-                  layer.msg(item.label+item.id+item.value,{icon:1});
-                }
-            });
-
-            $("#tree_" + i).on('select',function (event) {
-                var args = event.args;
-                var item = $("#" + event.target.id).jqxTree('getItem', args.element);
+            $("#tree_" + i).on("click",function (event) {
+                var args = event.currentTarget.id;
+                var item = $("#" + event.currentTarget.id).jqxTree('getItem', event.target.parentElement);
                 if (item.value != null) { //判断叶子节点
                   createTab(item.label, item.id, item.value);
                 }
             });
+
+            // $("#tree_" + i).on('select',function (event) {
+            //     var args = event.args;
+            //     var item = $("#" + event.target.id).jqxTree('getItem', args.element);
+            //     if (item.value != null) { //判断叶子节点
+            //       createTab(item.label, item.id, item.value);
+            //     }
+            // });
           }
          }
         

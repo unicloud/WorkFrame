@@ -43,6 +43,10 @@ function GetCalculateDate(AddDayCount) {
     return (new Date(dd.setDate(dd.getDate()+AddDayCount)));//获取AddDayCount天后的日期
 };
 
+/** 
+ * 重写字符串的startWith函数
+ * @param str 起始子字符串
+ */
 String.prototype.startWith = function(str){
     if(str == null || str == ""|| this.length == 0 || str.length > this.length)
       return false
@@ -52,6 +56,10 @@ String.prototype.startWith = function(str){
       return false;
 };
 
+/** 
+ * 重写字符串的endWith函数
+ * @param str 结尾子字符串
+ */
 String.prototype.endWith = function(str){
     if(str == null || str == ""|| this.length == 0 || str.length > this.length)
       return false;
@@ -61,7 +69,9 @@ String.prototype.endWith = function(str){
       return false;
 };
 
-
+/** 
+ * 重写字符串的trim函数
+ */
 String.prototype.trim = function () {
     var str = this ;
     str = str.replace(/^\s /, '');
@@ -73,6 +83,14 @@ String.prototype.trim = function () {
     }
     return str;
 };
+
+/** 对数组数据插入的扩展
+ *@param index 插入的位置：0,1,2
+ *@param item 插入项
+ */
+Array.prototype.insert = function (index, item) {  
+  this.splice(index, 0, item);  
+}; 
 
 /**
  * 获取带标记子字符串
