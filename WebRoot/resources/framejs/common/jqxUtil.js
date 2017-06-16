@@ -223,14 +223,14 @@ var createUserCtrl = function(containerId, item, floatDirect, Id, theme) {
     }
     if (floatDirect == undefined) {
         floatDirect = "left";
-    }    
+    }
     if (Id == undefined) {
         Id = containerId + item.datafield;
     }
     if (theme == undefined) {
         theme = sysTheme;
     }
-    var html = "<div style='margin: 5px 10px;float:" + floatDirect + ";width:210px;height:30px;background:rgba(200, 200, 200, 0.2);'>";
+    var html = "<div style='margin: 5px 10px;float:" + floatDirect + ";width:250px;height:30px;background:rgba(200, 200, 200, 0.2);'>";
     html = html + "<div style='float:left;text-align:justify;min-width:80px;max-width:80px;'>" + item.text + ":</div>";
     if (item.columntype == "textbox") {
         html = html + "<input type='text' id='" + Id + "' style='float:left;' />";
@@ -242,20 +242,29 @@ var createUserCtrl = function(containerId, item, floatDirect, Id, theme) {
     container.append(userCtrl);
     var editCtrl = $("#" + Id);
     if (item.columntype == "textbox") {
-        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: '120px' , maxLength: item.dataLength });
-    } else if (item.columntype == "numberinput"){ 
-        editCtrl.jqxNumberInput({theme: sysTheme,  height: "20px", width: '120px',decimalDigits : 0, spinButtons : false, groupSeparator : '', inputMode : 'simple'});
+        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: '160px' , maxLength: item.dataLength });
+    } else if (item.columntype == "numberinput"){
+        var decimaldigits = item.cellsformat.substring(1);
+        editCtrl.jqxNumberInput({theme: sysTheme,  height: "20px", width: '160px',decimalDigits : decimaldigits, spinButtons : true, inputMode : 'simple'});
     } else if (item.columntype == "datetimeinput"){ 
-        editCtrl.jqxDateTimeInput({ theme: sysTheme,formatString: item.cellsformat, width: "120px", height: "20px", culture: "zh-CN" });
+        editCtrl.jqxDateTimeInput({ theme: sysTheme,formatString: item.cellsformat, width: "160px", height: "20px", culture: "zh-CN", enableBrowserBoundsDetection : true });
+        if (item.cellsformat.indexOf("H") > 0) {
+            editCtrl.jqxDateTimeInput({showTimeButton: true});
+        }
     } else if (item.columntype == "dropdownlist") {
-        editCtrl.jqxDropDownList({theme: sysTheme, checkboxes: true, width: '120px', height: "20px", placeHolder:'',
-            source: item.comboxList, displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: true
+        editCtrl.jqxDropDownList({theme: sysTheme, checkboxes: true, width: '160px', height: "20px", placeHolder:'',
+            source: item.comboxList, displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: true, enableBrowserBoundsDetection : true 
         });
         if (item.comboxList.length >= 6) {
             editCtrl.jqxDropDownList({autoDropDownHeight: false, dropDownHeight: "160px"})
         }
     } else {
-        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: "60px" , maxLength: "100" });
+        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: "160px" , maxLength: "100" });
+    }
+    //将pkid、createUser 、createTime 、modifyUser 、modifyTime 设为不可编辑
+    var specialField = item.datafield.toLocaleUpperCase();
+    if (specialField == "PKID" || specialField == "CREATEUSER" || specialField == "CREATETIME" ||specialField == "MODIFYUSER" ||specialField == "MODIFYTIME") {
+        setJqxDisabled(Id, true);
     }
 };
 
@@ -281,6 +290,24 @@ function createFlexGridRowData(flexGridDataFields, rowNum) {
     return customdata;
 };
 
+/**
+ * 设置Jqx控件是否可编辑
+ * @param itemId 控件ID
+ * @param disable true -- 不可编辑，false --可以编辑
+ */
+function setJqxDisabled(itemId, disable) {
+    var item = $("#" + itemId)[0];
+    var className = item.className;
+    if (className.indexOf("jqx-datetimeinput") >= 0) {
+         $("#"+item.id).jqxDateTimeInput({disabled: true});
+    } else if (className.indexOf("jqx-dropdownlist") >= 0) {
+         $("#"+item.id).jqxDropDownList({disabled: true});
+    } else if (className.indexOf("jqx-numberinput") >= 0) {
+         $("#"+item.id).jqxNumberInput({disabled: true});
+    } else if (className.indexOf("jqx-input") >=0) {
+         $("#"+item.id).jqxInput({disabled: true});
+    }
+};
 //权限控制思路。判断如果是发布版，则进入各个页面之前获取页面的权限，根据权限初始化页面，否则不加载页面
 //根据权限加载页面时区分tab页权限，按钮权限，右键菜单权限
 //考虑对于嵌套JSP的情况和iframe加载页面的情况，权限的控制处理

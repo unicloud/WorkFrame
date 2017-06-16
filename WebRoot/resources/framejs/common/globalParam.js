@@ -11,10 +11,8 @@ var sysTheme = 'energyblue';
 // 配置 Jquery AJAX 请求的超时时间
 var AJAXTimeout = 1800000; // 超时时间设置,默认为30分钟,单位毫秒
 
-// 分页 页数 下拉列表
-var pagesizeoptions = [ "100", "500", "2000", "10000" ];
 //分页页面初始页大小
-var commonpageInitSize = 20;
+var commonpageInitSize = 100;
 
 var allFieldsGridRowNum = 3;
 

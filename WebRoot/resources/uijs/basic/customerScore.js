@@ -8,7 +8,7 @@
 var initTab1Btns = function() {
     var container = getToolBarContainer("toolbartab1_oneResultGrid");
     var addBtn = createToolBarCustomButton(container, "新增", "add", "tab1_add", sysTheme);
-    var editBtn = createToolBarCustomButton(container, "编辑", "edit", "tab1_edit", sysTheme);
+    var editBtn = createToolBarCustomButton(container, "编辑", "application_form_edit", "tab1_edit", sysTheme);
     // add new row.
     addBtn.click(function (event) {
       var curEditData = {"pkid":1};

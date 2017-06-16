@@ -79,13 +79,14 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             "value": item.datafield, "values": {"name":"TEXT", "value":"VALUE", "source":item.comboxList}};
             gridVars.resultDatafields.push(txtFiledItem);
             item.displayfield = item.datafield + "TXT";
-            var testList = item.comboxList;
+            eval("var dropdownlisteditor" + gridId + item.datafield + "List = item.comboxList");
             item.createeditor = function(row, value, editor) {
                 var autoHeight = true;
+                eval("var testList= " + editor[0].id + "List");
                 if (testList.length >= 6) {
                     autoHeight = false;
                 }
-                editor.jqxDropDownList({source: testList ,displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: autoHeight});
+                editor.jqxDropDownList({source: testList,displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: autoHeight});
             };
             filedItem.type = "string";
         } else {
@@ -108,12 +109,14 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
     var gridDataSource = {
         type: "POST",
         datatype: "json",
+        pagesize: commonpageInitSize,
         datafields: gridVars.resultDatafields,
-        url: "",
+        url: "", //TODO 分页查询方法
         root: 'rows',
         cache: false,
         data : {
-            whereJson : "-1"
+            "whereJson" : "-1",
+            "dwName" : gridVars.resultDwName
         },
         pager: function (pagenum, pagesize, oldpagenum) {
 
@@ -199,6 +202,137 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
  * @param gridVars grid参数
  */
 var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
+    if (gridVars.resulDwInfos.length == 0) {
+        queryDwInfo(gridVars);
+    }
+    //依然为空，则不往下执行
+    if (gridVars.resulDwInfos.length == 0) {
+        return;
+    }
+    var columns = clone(gridVars.resulDwInfos.disColumns);
+    for (var i= 0; i< columns.length; i++) {
+        var item =  columns[i];
+        //如果是非空字段
+        if (item.notnull) {
+            item.text = item.text + "*";
+            item.classname = "requirdField";
+        }
+        var filedItem = {"name" : item.datafield};
+        if (item.columntype == "numberinput") {
+            filedItem.type = "number";
+        } else if (item.columntype == "datetimeinput") {
+            filedItem.type = "date";
+            filedItem.format = item.cellsformat;
+        } else if (item.columntype == "dropdownlist") {
+            item.editable = true;
+            var txtFiledItem = {"name": item.datafield + "TXT","type" :"string",
+            "value": item.datafield, "values": {"name":"TEXT", "value":"VALUE", "source":item.comboxList}};
+            gridVars.resultDatafields.push(txtFiledItem);
+            item.displayfield = item.datafield + "TXT";
+            eval("var dropdownlisteditor" + gridId + item.datafield + "List = item.comboxList");
+            item.createeditor = function(row, value, editor) {
+                var autoHeight = true;
+                eval("var testList= " + editor[0].id + "List");
+                if (testList.length >= 6) {
+                    autoHeight = false;
+                }
+                editor.jqxDropDownList({source: testList,displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: autoHeight});
+            };
+            filedItem.type = "string";
+        } else {
+            filedItem.type = "string";
+        }
+        gridVars.resultColumns.push(item);
+        gridVars.resultDatafields.push(filedItem);
+        if (item.columntype == "dropdownlist") {
+
+            var txtColumnItem = {};
+            txtColumnItem.displayfield = item.datafield;
+            txtColumnItem.columntype = "string";
+            txtColumnItem.hidden = true;
+            txtColumnItem.text = item.text;
+            gridVars.resultColumns.push(txtColumnItem);
+        }
+    }
+
+    // 设置结果集Grid查询的数据
+    var gridDataSource = {
+        type: "POST",
+        datatype: "json",
+        pagesize: commonpageInitSize,
+        datafields: gridVars.resultDatafields,
+        url: "", //TODO 不分页查询方法
+        root: 'rows',
+        cache: false,
+        data : {
+            "whereJson" : "-1",
+            "dwName" : gridVars.resultDwName
+        },
+        pager: function (pagenum, pagesize, oldpagenum) {
+
+        },
+        beforeprocessing: function (data) {
+            if (data.success === undefined) {
+                return;
+            }
+            if (data.success) {
+                gridDataSource.totalrecords = data.total;
+            }
+            else {
+                if (typeof(data.msg) != "undefined") {
+                    if (data.operationType != "invalid") {
+                            layer.alert(data.msg, {icon : 3});
+                    }
+                }
+                return;
+            }
+        },
+        addrow: function (rowid, rowdata, position, commit) {
+            commit(true);
+        },
+        deleterow: function (rowid, commit) {
+            commit(true);
+        },
+        updaterow: function (rowid, newdata, commit) {
+            commit(true);
+        }
+    };
+    
+    var gridDataAdapter = new $.jqx.dataAdapter(gridDataSource, {
+        autoBind: false,
+        downloadComplete: function (data, status, xhr) { },
+        loadComplete: function (data) {
+            $("#"+gridId).jqxGrid("autoresizecolumns");//调整列以适应文本
+        },
+        loadError: function (xhr, status, error) {
+        }
+    });
+    
+    $("#" + gridId).jqxGrid({
+        theme : sysTheme,
+        width: '100%',
+        height: '100%',
+        source: gridDataAdapter,
+        localization: getLocalization(defaultCulture),
+        sortable : true,
+        columnsresize: true,    // 列是否可以拉长
+        columnsreorder: true,   // 列是否可以拖动   
+        selectionmode : 'multiplerowsextended',
+        enablemousewheel: true,
+        showtoolbar: true,
+        editable: true,
+        rendertoolbar: function (toolbar) {
+        },
+        columns : gridVars.resultColumns
+    });
+
+    $("#" + gridId).on('contextmenu',function() {
+        return false;
+    });
+
+    if (hasEditWindow) {
+        initEditWindow(gridId + "EditWindow", gridVars);
+    }
 };
 
 /**
@@ -214,8 +348,8 @@ var initEditWindow = function(containerId, gridVars, canSave) {
         theme : sysTheme,
         autoOpen: false,
         isModal: true,
-        height: "90%",
-        width: "90%",
+        height: "95%",
+        width: "95%",
         resizable: true
     });
     if (gridVars.resulDwInfos.length == 0) {
@@ -251,6 +385,7 @@ var initNormQueryWindow = function(containerId, gridVars, canSave) {
     var columns = clone(gridVars.queryDwInfos.disColumns);
     for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
+        if (item.datafield)
         createUserCtrl(containerId, item);
     }
 };
@@ -277,12 +412,27 @@ var initFlexQueryGrid = function(gridId, gridVars) {
         if (item.columntype == "numberinput" || item.columntype == "datetimeinput") {
             item.columntype = "textbox";
             item.cellsformat = "";
+        } else if (item.columntype == "dropdownlist") {
+            item.editable = true;
+            var txtFiledItem = {"name": item.datafield + "TXT","type" :"string",
+            "value": item.datafield, "values": {"name":"TEXT", "value":"VALUE", "source":item.comboxList}};
+            gridVars.queryDatafields.push(txtFiledItem);
+            item.displayfield = item.datafield + "TXT";
+            eval("var dropdownlisteditor" + gridId + item.datafield + "List = item.comboxList");
+            item.createeditor = function(row, value, editor) {
+                var autoHeight = true;
+                eval("var testList= " + editor[0].id + "List");
+                if (testList.length >= 6) {
+                    autoHeight = false;
+                }
+                editor.jqxDropDownList({source: testList,displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: autoHeight});
+            };
         }
         //如果是索引
         if (item.isIndex) {
             item.classname = "indexField";
         }
-        var filedItem = {"name" : item.datafield};
+        var filedItem = {"name" : item.datafield, "type" : "string"};
         gridVars.queryColumns.push(item);
         gridVars.queryDatafields.push(filedItem);
     }
@@ -328,5 +478,9 @@ var initFlexQueryGrid = function(gridId, gridVars) {
         enablemousewheel: true,
         editmode: 'click',
         columns : gridVars.queryColumns
+    });
+
+    $("#" + gridId).on('contextmenu',function() {
+        return false;
     });
 };

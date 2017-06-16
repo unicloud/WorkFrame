@@ -18,6 +18,15 @@ var initCurdBtns = function(containerId, btnTypes) {
 };
 
 /**
+ * @Title initQueryBtn 初始化查询btn
+ * @param containerId 容器ID
+ * @param gridId grid
+ */
+var initQueryBtn = function(containerId, gridId) {
+
+};
+
+/**
  * @Title initAddBtn 初始化新增btn
  * @param containerId 容器ID
  * @param gridId grid
@@ -68,5 +77,14 @@ var initImpBtn = function(containerId, gridId) {
  * @param gridId grid
  */
 var initExpBtn = function(containerId, gridId) {
+
+};
+
+/**
+ * @Title getQueryCondition 拼接查询条件
+ * @param containerId 容器ID
+ * @param gridId grid
+ */
+var getQueryCondition = function() {
 
 };

@@ -91,7 +91,7 @@
     <script type="text/javascript">
         initFlexQueryGrid("tab1_flexQueryGrid", oneResultGridVars);
         initNormQueryWindow("tab1_normQueryGrid", oneResultGridVars);
-        initPagingGrid("tab1_oneResultGrid", oneResultGridVars, true);
+        initNoPagingGrid("tab1_oneResultGrid", oneResultGridVars, true);
         initTab1Btns();
     </script>
 
