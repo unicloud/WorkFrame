@@ -117,7 +117,7 @@
             $("#tree_" + i).on("click",function (event) {
                 var args = event.currentTarget.id;
                 var item = $("#" + event.currentTarget.id).jqxTree('getItem', event.target.parentElement);
-                if (item.value != null) { //判断叶子节点
+                if (item != null && item.value != null) { //判断叶子节点
                   createTab(item.label, item.id, item.value);
                 }
             });

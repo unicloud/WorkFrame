@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.greatfly.common.dao.impl.JdbcBaseDao;
 import com.greatfly.common.service.impl.BaseService;
+import com.greatfly.common.util.GlobalUtil;
 import com.greatfly.common.util.StringUtil;
 import com.greatfly.rams.basic.dao.MdDatawindowFactorDao;
 import com.greatfly.rams.basic.domain.MdDatawindowFactor;
@@ -41,18 +42,18 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
      * @param pcType 客货类型
      * @return List<MdDatawindowFactor>
      */
-    public List<MdDatawindowFactor> getDatawindowFactors(String dwName, String pcode,String pcType) {
+    public List<MdDatawindowFactor> getDatawindowFactors(String dwName) {
         List<MdDatawindowFactor> dataWindowList = null;
         try {
-        	List<String> userCodeList = new ArrayList<String>();
-            userCodeList.add(pcode);
+            List<String> userCodeList = new ArrayList<String>();
+            userCodeList.add(GlobalUtil.getUser().getPcode());
             userCodeList.add("***");
             Map<String, Object> map = new HashMap<String, Object>();
             String hql = "from MdDatawindowFactor as dwinfo " 
                     + "where dwinfo.dwName=:dwName and dwinfo.pcType=:pcType " 
                     + " and dwinfo.applyUser in (:applyUser)";
             map.put("dwName", dwName);
-            map.put("pcType", pcType);
+            map.put("pcType", GlobalUtil.getUser().getPcType());
             map.put("applyUser", userCodeList);
 
             dataWindowList = find(hql, map);
@@ -70,26 +71,27 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
      * @param pcType 客货类型
      * @return MdDatawindowFactor 
      */
-    public MdDatawindowFactor getCurDatawindowFactor(String dwName, String pcode, String pcType) {
-    	MdDatawindowFactor curDwfactor = null;
-    	try {
-        	List<MdDatawindowFactor> dwfactorList = getDatawindowFactors(dwName, pcode, pcType);
-        	int count = dwfactorList.size();
-        	if (count == 1) {
-				curDwfactor = dwfactorList.get(0);
-			} else if (count > 1) {
-				for (int i = 0; i < dwfactorList.size(); i++) {
-					MdDatawindowFactor dwfactor = dwfactorList.get(i);
-					if (dwfactor.getApplyUser() == pcode || i == dwfactorList.size()) {
-						curDwfactor = dwfactor;
-						break;
-					}
-				}
-			}
-    	} catch (Exception e) {
-    		throw e;
-    	}
-    	return curDwfactor;
+    public MdDatawindowFactor getCurDatawindowFactor(String dwName) {
+        MdDatawindowFactor curDwfactor = null;
+        try {
+        	String pcode = GlobalUtil.getUser().getPcode();
+            List<MdDatawindowFactor> dwfactorList = getDatawindowFactors(dwName);
+            int count = dwfactorList.size();
+            if (count == 1) {
+                curDwfactor = dwfactorList.get(0);
+            } else if (count > 1) {
+                for (int i = 0; i < dwfactorList.size(); i++) {
+                    MdDatawindowFactor dwfactor = dwfactorList.get(i);
+                    if (dwfactor.getApplyUser() == pcode || i == dwfactorList.size()) {
+                        curDwfactor = dwfactor;
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+        return curDwfactor;
     }
 
     /**
@@ -138,7 +140,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
             colObject.put("text", cnName);
             colObject.put("datafield", colName);
             if (width.isEmpty()) {
-            	width = "60";
+                width = "60";
             }
             colObject.put("width", Integer.parseInt(width) + "px");
             if ("NO".equals(editable)) {
@@ -211,10 +213,10 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
             String cnName = StringUtil.getSubString(colInfo, "CN"); //获取列的中文对照
             String width = StringUtil.getSubString(colInfo, "WD"); //界面显示的列宽
             if (cnName.isEmpty()) {
-            	cnName = colName;
+                cnName = colName;
             }
             if (width.isEmpty()) {
-            	width = "60";
+                width = "60";
             }
             hidColObject.put("text", cnName);
             hidColObject.put("datafield", colName);
@@ -226,139 +228,6 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
         gridInfos.put("prmColumns", prmCols);
         return gridInfos;
     }
-
-    /**
-     * @Title: resolveDwfactor 解析数据窗要素
-     * @param dwfactor 数据窗对象
-     * @return 返回grid需要的信息
-     */
-    public JSONObject getResultGridInfo(MdDatawindowFactor dwfactor) {
-    	JSONObject gridInfos = new JSONObject();
-    	JSONArray gridcols = new JSONArray();
-    	JSONArray griddatafields = new JSONArray();
-        //将数据窗中字段值所有都转成JSON格式数据
-    	String colInfos = getdwcolumn_info1_10(dwfactor);
-    	String disCols = dwfactor.getDisColumn();
-    	String notNullCols = StringUtil.getSubString(dwfactor.getDwInfo(), "NOTNULL");
-    	String indexCols = StringUtil.getSubString(dwfactor.getDwInfo(), "INDEX");
-    	String prmCols = dwfactor.getPrmColumn();
-    	JSONObject colObject = null;
-    	JSONObject datafiled = null;
-    	colObject = new JSONObject();
-    	colObject.put("text", "序号");
-    	colObject.put("sortable", false);
-    	colObject.put("filterable", false);
-    	colObject.put("editable", false);
-    	colObject.put("groupable", false);
-    	colObject.put("draggable", false);
-    	colObject.put("resizable", false);
-    	colObject.put("datafield", "");
-    	colObject.put("columntype", "number");
-    	colObject.put("width", "60px");
-    	colObject.put("maxwidth", "60px");
-    	colObject.put("align", "center");
-    	colObject.put("cellsrenderer", "test");
-    	gridcols.add(colObject);
-    	//获取某个字段的值
-        for (int i = 1; i < 200; i++) {
-        	String colName = StringUtil.getSubString(disCols, String.valueOf(i)); //获取显示列的别名
-        	if (colName.isEmpty()) {
-        		break;
-        	}
-        	colObject = new JSONObject();
-        	datafiled = new JSONObject();
-        	colObject.put("align", "center");
-        	String colInfo = StringUtil.getSubString(colInfos, colName);
-        	String cnName = StringUtil.getSubString(colInfo, "CN"); //获取列的中文对照
-        	//String dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
-        	String showType = StringUtil.getSubString(colInfo, "ST").toUpperCase(); //获取列的显示类型，为TXT或CMB
-        	String comboxValue = StringUtil.getSubString(colInfo, "VL"); //值,用于初始化下拉列表
-        	String dataType = StringUtil.getSubString(colInfo, "DT").toUpperCase(); //数据格式：CHAR\DATE\NUM
-        	String format = StringUtil.getSubString(colInfo, "FM").toUpperCase(); //显示格式,主要用于日期格式设置、数字保留位数设置
-        	String dataLen = StringUtil.getSubString(colInfo, "DL"); //数据长度
-        	String width = StringUtil.getSubString(colInfo, "WD"); //界面显示的列宽
-        	String editable = StringUtil.getSubString(colInfo, "ED"); //是否可编辑
-        	//String limit = StringUtil.getSubString(colInfo, "LT"); //数据长度限制
-        	if (notNullCols.indexOf("<" + colName + ">") >= 0) {
-        		//表示此列为非空字段
-        		colObject.put("notnull", true);
-        		cnName = cnName + "*";
-        	}
-        	if (indexCols.indexOf("<" + colName + ">") >= 0) {
-        		//表示此列为索引列
-        		colObject.put("isIndex", true);
-        	}
-        	if ("NO".equals(editable)) {
-        		colObject.put("editable", false);
-        	} else {
-        		colObject.put("editable", true);
-        	}
-        	colObject.put("datafield", colName);
-        	datafiled.put("name", colName);
-        	colObject.put("text", cnName);
-        	colObject.put("width", Integer.parseInt(width) + "px");
-        	if (Integer.parseInt(dataLen) > 0) { //dataLen = 0表示没限制长度，如数值、日期，主要用于做校验
-        		colObject.put("dataLength", Integer.parseInt(dataLen));
-        	}
-        	if ("CMB".equals(showType)) {
-        		datafiled.put("type", "string");
-        		//需要获取下拉列表的值
-        		List<Map<String, Object>> comboxList = getDropDownListForGrid(comboxValue);
-        		if (comboxList.size() == 0) {
-        			colObject.put("columntype", "textbox");
-        		} else {
-            		colObject.put("columntype", "dropdownlist");
-        			colObject.put("comboxList", comboxList);
-        		}
-        	} else {
-        		if ("NUM".equals(dataType)) {
-        			datafiled.put("type", "number");
-        			colObject.put("columntype", "numberinput");
-        			colObject.put("groupable", false);
-        			int decDigit = 0;
-                    if (format.endsWith("%")) {
-                        if (format.indexOf('.') >= 0) {
-                            decDigit = format.length() - format.indexOf('.') - 2;
-                        }
-                        colObject.put("cellsformat", "p" + decDigit);
-                    } else {
-                        if (format.indexOf('.') >= 0) {
-                            decDigit = format.length() - format.indexOf('.') - 1;
-                        }
-                        colObject.put("cellsformat", "d" + decDigit);
-                    }
-        		} else if ("DATE".equals(dataType)) {
-        			datafiled.put("type", "date");
-        			colObject.put("columntype", "datetimeinput");
-        			switch (format.replace("/", "-")) {
-	                    case "YYYY-MM-DD":
-	                    	colObject.put("cellsformat", "yyyy-MM-dd");
-	                        break;
-	                    case "YYYY-MM-DD HH24":
-	                    	colObject.put("cellsformat", "yyyy-MM-dd HH");
-	                        break;
-	                    case "YYYY-MM-DD HH24:MI":
-	                    	colObject.put("cellsformat", "yyyy-MM-dd HH:mm");
-	                        break;
-	                    case "YYYY-MM-DD HH24:MI:SS":
-	                    	colObject.put("cellsformat", "yyyy-MM-dd HH:mm:ss");
-	                        break;
-	                    default:
-	                    	colObject.put("cellsformat", "yyyy-MM-dd HH:mm:ss");
-	                        break;
-	                }
-        		} else {
-            		colObject.put("columntype", "textbox");
-        		}
-        	}
-        	gridcols.add(colObject);
-        	griddatafields.add(datafiled);
-        }
-        gridInfos.put("columns",gridcols);
-        gridInfos.put("datafields",griddatafields);
-        gridInfos.put("prmCols",prmCols);
-        return gridInfos;
-    }
     
     /** 
      * @Title: getDropDownListForGrid 获取下拉列表
@@ -366,7 +235,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
      * @return 下拉列表
      */
     public List<Map<String, Object>> getDropDownListForGrid(String comboxVl) {
-    	String vlXMLSub = comboxVl.substring(0, 4);
+        String vlXMLSub = comboxVl.substring(0, 4);
         List<Map<String, Object>> listMaps = new ArrayList<Map<String, Object>>();
         if ("####".equals(vlXMLSub) || "****".equals(vlXMLSub)) {
             String tvalue = comboxVl.substring(4).trim();
@@ -376,7 +245,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
             if ("####".equals(vlXMLSub)) {
                 listMaps = getDropDownList("_" + tvalue);
             } else {
-            	listMaps = jdBaseDao.queryForList(tvalue); 
+                listMaps = jdBaseDao.queryForList(tvalue); 
             }
         } else {
             //    管理员  DBA/普通用户  COMMON/查询用户  QUERY/
@@ -405,7 +274,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
         tMap.put("TEXT", "");
         tMap.put("VALUE", "");
         listMaps.add(tMap);
-        return listMaps;    	
+        return listMaps;        
     }
     
     /** 
@@ -414,7 +283,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
      * @return 下拉列表
      */
     public List<Map<String, Object>> getDropDownList(String cmbType) {
-    	String tcmbType = cmbType;
+        String tcmbType = cmbType;
         String sql = "";
         Map<String, String> values = new HashMap<String, String>();
         if (tcmbType.startsWith("_")) {
@@ -426,8 +295,9 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
         } else if ("ticketCode".equals(tcmbType)) {
             sql = "select t.tic_code ticCode,t.tic_length ticLength ,t.b_tno tno, t.tic_name ticName from MD_TICKET_CODE  t";
         }
-        return jdBaseDao.queryForList(sql, values);    		
+        return jdBaseDao.queryForList(sql, values);
     }
+
     /**
      * @Title: getdwcolumn_info1_10 获取数据窗口 column_info1 - column_info10 列的合并信息
      * @param dwfactor 数据窗信息
@@ -445,4 +315,4 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
             + ((dwfactor.getColumnInfo9() == null) ? "" : dwfactor.getColumnInfo9()) 
             + ((dwfactor.getColumnInfo10() == null) ? "" : dwfactor.getColumnInfo10());
     }
-}	
+}    

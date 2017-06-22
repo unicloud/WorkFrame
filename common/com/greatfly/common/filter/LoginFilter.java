@@ -16,6 +16,7 @@ import com.greatfly.common.CommonConstant;
 import com.greatfly.common.util.exception.AppException;
 import com.greatfly.common.util.JsonUtil;
 import com.greatfly.common.vo.RespVo;
+import com.greatfly.common.vo.UserVo;
 
 /**
  * 登陆过滤器，对session超时或者未登录的请求，全部跳转到登陆页面</br>
@@ -77,7 +78,8 @@ public class LoginFilter implements Filter {
      * @return 已经登陆返回false，session超时或者未登录的返回true
      */
     private boolean notLogin(HttpSession session) {
-        if (null != session.getAttribute(CommonConstant.USER_NAME)) {
+    	UserVo curUserVo = (UserVo) session.getAttribute(CommonConstant.CUR_USER);
+        if (null != curUserVo) {
             return false;
         }
         return true;

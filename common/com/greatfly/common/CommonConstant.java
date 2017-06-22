@@ -42,47 +42,7 @@ public final class CommonConstant {
 	/**
 	 * session中当前登陆用户的key
 	 */
-	public static final String USER_NAME = "USER_NAME";
-	
-	/**
-	 * session中当前登陆用户的key
-	 */
-	public static final String UNIT_NAME = "UNIT_NAME";
-	
-	/**
-	 * session中当前登陆用户的key
-	 */
-	public static final String DEPT_NAME = "DEPT_NAME";
-	
-	/**
-	 * session中当前登陆用户的key
-	 */
-	public static final String DUTY_NAME = "DUTY_NAME";
-	
-	/**
-	 * session中当前登陆用户的key
-	 */
-	public static final String PCODE = "PCODE";
-	
-	/**
-	 * session中当前登陆用户的key
-	 */
-	public static final String FULL_NAME = "FULL_NAME";
-	
-	/**
-	 * session中当前登陆用户的key
-	 */
-	public static final String ID_CODE = "ID_CODE";
-	
-	/**
-	 * session中当前登陆用户的key
-	 */
-	public static final String PC_TYPE = "PC_TYPE";
-
-	/**
-	 * 默认密码 -- 123456
-	 */
-	public static final String PWD = "123456";
+	public static final String CUR_USER = "CUR_USER";
 	
 	/**
 	 * 系统中使用的默认分隔符,默认值: ,

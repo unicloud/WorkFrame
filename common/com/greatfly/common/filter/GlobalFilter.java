@@ -10,7 +10,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import com.greatfly.common.CommonConstant;
+import com.greatfly.common.util.GlobalUtil;
 import com.greatfly.common.util.exception.AppException;
+import com.greatfly.common.vo.UserVo;
 
 
 /**
@@ -34,12 +37,12 @@ public class GlobalFilter implements Filter {
 			throw new AppException("request非HttpServletRequest实例");
 		}
 		HttpServletRequest servletRequest = (HttpServletRequest) request;
-//		Object userVo = servletRequest.getSession().getAttribute(CommonConstant.CURRENT_USER);
-//		if (userVo == null) {
-//			GlobalUtil.setUser(null);
-//		} else {
-//			GlobalUtil.setUser((UserVo) userVo);
-//		}
+		Object userVo = servletRequest.getSession().getAttribute(CommonConstant.CUR_USER);
+		if (userVo == null) {
+			GlobalUtil.setUser(null);
+		} else {
+			GlobalUtil.setUser((UserVo) userVo);
+		}
 		//将过滤器的控制向下传递
 		chain.doFilter(request, response);
 	}

@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 
 import com.greatfly.common.CommonConstant;
 import com.greatfly.common.dao.impl.JdbcBaseDao;
+import com.greatfly.common.util.GlobalUtil;
 import com.greatfly.common.util.cryptography.MD5Util;
 import com.greatfly.common.util.exception.AppException;
 import com.greatfly.common.util.msgconverter.CommonMsgOutput;
+import com.greatfly.common.vo.UserVo;
 
 /**
  * 登录ucc
@@ -51,7 +53,7 @@ public class LoginService {
                 	return false;
                  }
              } else {
-            	 setDefaultUserSession(session);
+            	 GlobalUtil.initSysmUser();
             	 return true;
              }
     	} catch (Exception e){
@@ -92,36 +94,23 @@ public class LoginService {
             throw new AppException(e.getMessage());
         }
     }
-    /**
-     * 设置默认用户session
-     * @param session
-     */
-    public void setDefaultUserSession(HttpSession session) {
-    	session.setAttribute(CommonConstant.USER_NAME, "测试");
-    	session.setAttribute(CommonConstant.UNIT_NAME, "**公司");
-    	session.setAttribute(CommonConstant.DEPT_NAME, "**部门");
-    	session.setAttribute(CommonConstant.DUTY_NAME, "**职位");
-    	session.setAttribute(CommonConstant.PCODE, "10000");
-    	session.setAttribute(CommonConstant.FULL_NAME, "TEST");
-    	session.setAttribute(CommonConstant.ID_CODE, "731");
-    	session.setAttribute(CommonConstant.PC_TYPE, "P");
-    	session.setAttribute("ID_CODE", "731");
-    }
-
+    
     /**
      * 设置当前用户session
      * @param session
      */
     @SuppressWarnings("rawtypes")
 	public void setUserSession(HttpSession session, Map data) {
-    	session.setAttribute(CommonConstant.USER_NAME, (String) data.get("USER_NAME"));
-    	session.setAttribute(CommonConstant.UNIT_NAME, (String) data.get("UNIT_NAME"));
-    	session.setAttribute(CommonConstant.DEPT_NAME, (String) data.get("DEPT_NAME"));
-    	session.setAttribute(CommonConstant.DUTY_NAME, (String) data.get("DUTY_NAME"));
-    	session.setAttribute(CommonConstant.PCODE, (String) data.get("PCODE"));
-    	session.setAttribute(CommonConstant.FULL_NAME, (String) data.get("FULL_NAME"));
-    	session.setAttribute(CommonConstant.PC_TYPE, "P");
-    	session.setAttribute("ID_CODE", "731");
+    	UserVo curUserVo = new UserVo();
+    	curUserVo.setUserName((String) data.get("USER_NAME"));
+    	curUserVo.setUnitName((String) data.get("UNIT_NAME"));
+    	curUserVo.setDeptName((String) data.get("DEPT_NAME"));
+    	curUserVo.setDutyName((String) data.get("DUTY_NAME"));
+    	curUserVo.setPcode((String) data.get("PCODE"));
+    	curUserVo.setFullName((String) data.get("FULL_NAME"));
+    	curUserVo.setPcType("P");
+    	curUserVo.setIdCode("731");
+    	session.setAttribute(CommonConstant.CUR_USER, curUserVo);
     }
 
     /**
@@ -129,14 +118,6 @@ public class LoginService {
      * @param session
      */
     public void clearSession(HttpSession session) {
-    	session.setAttribute(CommonConstant.USER_NAME, null);
-    	session.setAttribute(CommonConstant.UNIT_NAME, null);
-    	session.setAttribute(CommonConstant.DEPT_NAME, null);
-    	session.setAttribute(CommonConstant.DUTY_NAME, null);
-    	session.setAttribute(CommonConstant.PCODE, null);
-    	session.setAttribute(CommonConstant.FULL_NAME, null);
-    	session.setAttribute(CommonConstant.ID_CODE, null);
-    	session.setAttribute(CommonConstant.PC_TYPE, null);
-    	session.setAttribute("ID_CODE", null);
+    	session.setAttribute(CommonConstant.CUR_USER, new UserVo());
     }
 }

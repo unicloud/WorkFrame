@@ -1,21 +1,20 @@
 package com.greatfly.rams.basic.action;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.greatfly.common.CommonConstant;
 import com.greatfly.common.action.BaseAction;
 import com.greatfly.common.annotation.Description;
+import com.greatfly.common.util.GlobalUtil;
 import com.greatfly.common.util.JsonUtil;
 import com.greatfly.common.util.msgconverter.CommonMsgOutput;
 import com.greatfly.common.vo.RespVo;
+import com.greatfly.common.vo.UserVo;
 import com.greatfly.rams.basic.service.LoginService;
-import com.sun.faces.el.ELConstants;
 
 /**
  * 登陆Action
@@ -88,16 +87,8 @@ public class LoginAction extends BaseAction {
      */
     @Description("获取登录用户信息")
     public void getCurUserInfo() {
-    	HttpSession session = request.getSession();
-    	//从session中获取用户信息
-    	JSONObject userObject = new JSONObject();
-    	userObject.put("userName", session.getAttribute(CommonConstant.USER_NAME));
-    	userObject.put("unitName", session.getAttribute(CommonConstant.UNIT_NAME));
-    	userObject.put("deptName", session.getAttribute(CommonConstant.DEPT_NAME));
-    	userObject.put("dutyName", session.getAttribute(CommonConstant.DUTY_NAME));
-    	userObject.put("pcode", session.getAttribute(CommonConstant.PCODE));
-    	userObject.put("fullName", session.getAttribute(CommonConstant.FULL_NAME));
-    	output(userObject.toJSONString(), log);
+    	UserVo currentUser = (UserVo) getSession().getAttribute(CommonConstant.CUR_USER);
+		output(JsonUtil.toJson(currentUser), log);
     }
 
     @Description("用户密码修改")
@@ -106,7 +97,7 @@ public class LoginAction extends BaseAction {
         try {
             String originalPwd = request.getParameter("originalPwd");
             String password = request.getParameter("newPwd");
-            String pcode = (String) request.getSession().getAttribute(CommonConstant.PCODE);
+            String pcode = GlobalUtil.getUser().getPcode();
             jsonString = loginService.resetPassword(pcode, originalPwd, password);
         } catch (Exception e) {
             if (e.getMessage().startsWith("Incorrect result size: expected 1, actual 0")) {

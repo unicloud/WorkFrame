@@ -7,8 +7,9 @@
  */
 var initTab1Btns = function() {
     var container = getToolBarContainer("toolbartab1_oneResultGrid");
-    var addBtn = createToolBarCustomButton(container, "新增", "add", "tab1_add", sysTheme);
-    var editBtn = createToolBarCustomButton(container, "编辑", "application_form_edit", "tab1_edit", sysTheme);
+    var addBtn = createToolBarCustomButton(container, "新增", "add", "tab1_add");
+    var editBtn = createToolBarCustomButton(container, "编辑", "application_form_edit", "tab1_edit");
+    var impBtn = createImportButton(container, "tab1_impBtn");
     // add new row.
     addBtn.click(function (event) {
       var curEditData = {"pkid":1};
@@ -19,5 +20,11 @@ var initTab1Btns = function() {
 
     editBtn.click(function (event) {
         $("#tab1_oneResultGridEditWindow").jqxWindow("open");
+    });
+
+    impBtn.click(function (event) {
+        $('#windowFileUpload').jqxWindow({title: "导入数据"});
+        $('#window_jqxFileUpload').jqxFileUpload({uploadUrl: "basic/file-deal-record!fileImportInPrc.do?fileType=BASE_AMOUNT"});
+        $('#windowFileUpload').jqxWindow('open');
     });
 };

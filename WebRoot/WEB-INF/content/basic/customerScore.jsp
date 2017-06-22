@@ -75,6 +75,7 @@
       </div>
       <div id = 'tab1_oneResultGridEditWindowContent'></div>
     </div>
+    <jsp:include page="/WEB-INF/content/commonJsp/fileUpload.jsp" />
     <script type="text/javascript">
         $("#tabsMain").jqxTabs({theme : sysTheme,width: "100%", height: "100%" });
 
