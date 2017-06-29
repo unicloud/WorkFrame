@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.greatfly.common.CommonConstant;
 import com.greatfly.common.action.BaseAction;
@@ -78,10 +79,25 @@ public class DatawindowFactorAction extends BaseAction {
         //记日志（操作日志）
         String jsonString = "";
         try {
-            String dwName = request.getParameter("dwName");
-            String whereJson = request.getParameter("whereJson");
-            //1、拼接select语句
-            //2、拼接Where条件
+            datawindowFactorVo = getRequestVo(DatawindowFactorVo.class);
+            //初始化时whereJson = -1 ,不用查询
+            boolean ifSuccess = true;
+            if (datawindowFactorVo.getWhereJson().equals("-1")) {
+                jsonString = CommonMsgOutput.getResponseJson(true, 0, new JSONArray(), "0", "select");
+                ifSuccess = false;
+            }
+            if (ifSuccess) {
+                ps = initPs(String.valueOf(datawindowFactorVo.getPagenum()), 
+                        String.valueOf(datawindowFactorVo.getPagesize()));
+                MdDatawindowFactor curDwfactor = datawindowFactorService.getCurDatawindowFactor(datawindowFactorVo.getDwName());
+                //1、拼接SELECT语句 SELECT * FROM TABLE WHERE 1 = 1
+                //2、拼接WHERE条件（注意GROUP BY\ORDER BY子句、注意UNION语句可能形成多个FROM\WHERE）
+//                datawindowFactorService.GenerateQuerySQL(datawindowFactorVo);
+                //3、根据PS拼接分页语句(优化查询)
+                //4、写一个通用的方法，传入SQL语句，返回Json数据集
+                //注意WHERE条件的拼接格式：AND\OR\IN\NOT IN\IS NULL\IS NOT NULL\NVL\> >= < <= <> =\
+                //考虑用户前台交互形成的过滤、排序语句
+            }
         } catch (Exception e) {
             jsonString = CommonMsgOutput.getResponseJson(false, 0, null, e.getMessage(), "QUERY");
         } finally {

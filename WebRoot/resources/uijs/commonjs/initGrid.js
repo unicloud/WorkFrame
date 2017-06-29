@@ -83,6 +83,7 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             item.createeditor = function(row, value, editor) {
                 var autoHeight = true;
                 eval("var testList= " + editor[0].id + "List");
+                testList.push({"TEXT": "","VALUE": ""});
                 if (testList.length >= 6) {
                     autoHeight = false;
                 }
@@ -111,7 +112,7 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         datatype: "json",
         pagesize: commonpageInitSize,
         datafields: gridVars.resultDatafields,
-        url: "", //TODO 分页查询方法
+        url: "basic/datawindow-factor!queryPagingDataSet.do",
         root: 'rows',
         cache: false,
         data : {
@@ -229,7 +230,8 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             "value": item.datafield, "values": {"name":"TEXT", "value":"VALUE", "source":item.comboxList}};
             gridVars.resultDatafields.push(txtFiledItem);
             item.displayfield = item.datafield + "TXT";
-            eval("var dropdownlisteditor" + gridId + item.datafield + "List = item.comboxList");
+            eval("var dropdownlisteditor" + gridId + item.datafield + "List = clone(item.comboxList)");
+            eval("dropdownlisteditor" + gridId + item.datafield + "List.push({'TEXT': '','VALUE': ''})");
             item.createeditor = function(row, value, editor) {
                 var autoHeight = true;
                 eval("var testList= " + editor[0].id + "List");
@@ -261,7 +263,7 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         datatype: "json",
         pagesize: commonpageInitSize,
         datafields: gridVars.resultDatafields,
-        url: "", //TODO 不分页查询方法
+        url: "basic/datawindow-factor!queryDataSet.do",
         root: 'rows',
         cache: false,
         data : {
@@ -360,19 +362,57 @@ var initEditWindow = function(containerId, gridVars, canSave) {
         return;
     }
     var columns = clone(gridVars.resulDwInfos.disColumns);
+    var validator = new Array();
     for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
-        createUserCtrl(containerId + "Content", item);
+        createEditWindow(containerId + "Content", item, validator);
     }
+    //添加控件验证
+    $("#" + containerId + "Content").jqxValidator({
+        rules: validator
+    });
+    //将enter键模拟成Tab键
+    $("#" + containerId + "Content .jqx-widget").keydown(function(e) {
+        if (e.keyCode == 13) {
+            var inputs = $("#" + containerId + "Content .jqx-widget[disabled!='disabled'][aria-disabled!='true']:not(.jqx-input-disabled):not(.jqx-dropdownlist-state-disabled)");
+            var idx = inputs.index(this);
+            if (idx == inputs.length - 1) {
+                var className = inputs[0].className;
+                if (className.indexOf("jqx-datetimeinput") >= 0) {
+                     $("#"+inputs[0].id).jqxDateTimeInput('focus');
+                } else if (className.indexOf("jqx-dropdownlist") >= 0) {
+                     $("#"+inputs[0].id).jqxDropDownList('focus');
+                } else if (className.indexOf("jqx-numberinput") >= 0) {
+                     $("#"+inputs[0].id).jqxNumberInput('selectAll');
+                } else if (className.indexOf("jqx-input") >=0) {
+                     $("#"+inputs[0].id).jqxInput('selectAll');
+                } else {
+                    inputs[0].focus();
+                }
+            } else {
+                var className = inputs[idx + 1].className;
+                if (className.indexOf("jqx-datetimeinput") >= 0) {
+                     $("#"+inputs[idx + 1].id).jqxDateTimeInput('focus');
+                } else if (className.indexOf("jqx-dropdownlist") >= 0) {
+                     $("#"+inputs[idx + 1].id).jqxDropDownList('focus');
+                } else if (className.indexOf("jqx-numberinput") >= 0) {
+                     $("#"+inputs[idx + 1].id).jqxNumberInput('selectAll');
+                } else if (className.indexOf("jqx-input") >=0) {
+                     $("#"+inputs[idx + 1].id).jqxInput('selectAll');
+                } else {
+                    inputs[idx + 1].focus();
+                }
+            }
+        }
+    });
 };
 
 /**
- * @Title initEditWindow 初始化普通查询容易
- * @param containerId 弹出窗容器的ID
+ * @Title initNormQueryWindow 初始化普通查询容器
+ * @param containerId 普通查询容器的ID
  * @param gridVars grid参数
- * @param canSave 是否提供保存按钮
  */
-var initNormQueryWindow = function(containerId, gridVars, canSave) {
+var initNormQueryWindow = function(containerId, gridVars) {
     //弹出窗上的控件ID需要带一个随机数，以确保同一个页面上的控件ID可以区别开
     //日期类型（区分是否需要到时分秒）、数值类型（保留位数）、文本类型（长文本）、下拉列表（区分单选、多选）
     if (gridVars.queryDwInfos.length == 0) {
@@ -386,8 +426,42 @@ var initNormQueryWindow = function(containerId, gridVars, canSave) {
     for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
         if (item.datafield)
-        createUserCtrl(containerId, item);
+        createNormQueryContent(containerId, item);
     }
+    //将enter键模拟成Tab键
+    $("#" + containerId + " .jqx-widget").keydown(function(e) {
+        if (e.keyCode == 13) {
+            var inputs = $("#" + containerId + " .jqx-widget[disabled!='disabled'][aria-disabled!='true']:not(.jqx-input-disabled):not(.jqx-dropdownlist-state-disabled)");
+            var idx = inputs.index(this);
+            if (idx == inputs.length - 1) {
+                var className = inputs[0].className;
+                if (className.indexOf("jqx-datetimeinput") >= 0) {
+                     $("#"+inputs[0].id).jqxDateTimeInput('focus');
+                } else if (className.indexOf("jqx-dropdownlist") >= 0) {
+                     $("#"+inputs[0].id).jqxDropDownList('focus');
+                } else if (className.indexOf("jqx-numberinput") >= 0) {
+                     $("#"+inputs[0].id).jqxNumberInput('selectAll');
+                } else if (className.indexOf("jqx-input") >=0) {
+                     $("#"+inputs[0].id).jqxInput('selectAll');
+                } else {
+                    inputs[0].focus();
+                }
+            } else {
+                var className = inputs[idx + 1].className;
+                if (className.indexOf("jqx-datetimeinput") >= 0) {
+                     $("#"+inputs[idx + 1].id).jqxDateTimeInput('focus');
+                } else if (className.indexOf("jqx-dropdownlist") >= 0) {
+                     $("#"+inputs[idx + 1].id).jqxDropDownList('focus');
+                } else if (className.indexOf("jqx-numberinput") >= 0) {
+                     $("#"+inputs[idx + 1].id).jqxNumberInput('selectAll');
+                } else if (className.indexOf("jqx-input") >=0) {
+                     $("#"+inputs[idx + 1].id).jqxInput('selectAll');
+                } else {
+                    inputs[idx + 1].focus();
+                }
+            }
+        }
+    });
 };
 
 /**

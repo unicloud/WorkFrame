@@ -7,27 +7,9 @@ var treedata =
             children : [
                 {
                     id : "1001",
-                    text  : "客户基本信息",
-                    leaf : true,
-                    url : "customerInfo"
-                },
-                {
-                    id : "1002",
-                    text  : "评分要素维护",
-                    leaf : true,
-                    url : "scoreFactor"
-                },
-                {
-                    id : "1003",
                     text  : "客户汇总信息",
                     leaf : true,
                     url : "customerScore"
-                },
-                {
-                    id : "1004",
-                    text  : "汇总信息查询",
-                    leaf : true,
-                    url : "computeScore"
                 }
             ]
         },{
@@ -45,6 +27,12 @@ var treedata =
                     text  : "基础列表维护",
                     leaf : true,
                     url : "mdCodeList"
+                },
+                {
+                    id : "2003",
+                    text  : "用户权限",
+                    leaf : true,
+                    url : "userPrivilege"
                 }
             ]
         },

@@ -40,3 +40,6 @@ var curUser = {
     pcode : "",
     fullName : ""
 };
+
+//默认的查询条件
+var defaultQueryCond = "";

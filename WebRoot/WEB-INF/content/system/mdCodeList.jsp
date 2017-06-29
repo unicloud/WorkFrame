@@ -5,17 +5,17 @@
 <head>
 <jsp:include page="/WEB-INF/content/commonJsp/base.jsp" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>客户汇总信息</title>
+<title>基础列表维护</title>
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="cache-control" content="no-cache">
 <meta http-equiv="expires" content="0">
 <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
-<meta http-equiv="description" content="客户汇总信息">
+<meta http-equiv="description" content="基础列表维护">
 
 <script type="text/javascript">
     var oneResultGridVars = {
-        queryDwName  : "DW_D_CUSTOMER_INFO_QUERY",
-        resultDwName : "DW_D_CUSTOMER_INFO_RESULT",
+        queryDwName  : "DW_MD_CODE_LIST_QUERY",
+        resultDwName : "DW_MD_CODE_LIST_RESULT",
         //查询窗口
         queryDwInfos : [],
         queryDatafields : [],
@@ -75,7 +75,6 @@
       </div>
       <div id = 'tab1_oneResultGridEditWindowContent'></div>
     </div>
-    <jsp:include page="/WEB-INF/content/commonJsp/fileUpload.jsp" />
     <script type="text/javascript">
         $("#tabsMain").jqxTabs({theme : sysTheme,width: "100%", height: "100%" });
 
@@ -87,13 +86,11 @@
         $(".tabswidget").jqxTabs({theme : sysTheme,height: "100%",width: "100%" });
     </script>
     <script type="text/javascript" src="resources/uijs/commonjs/initGrid.js"></script>
-    <script type="text/javascript" src="resources/uijs/basic/customerScore.js"></script>
     <!--  id="jqxwidgets" -->
     <script type="text/javascript">
         initFlexQueryGrid("tab1_flexQueryGrid", oneResultGridVars);
         initNormQueryWindow("tab1_normQueryGrid", oneResultGridVars);
         initNoPagingGrid("tab1_oneResultGrid", oneResultGridVars, true);
-        initTab1Btns();
     </script>
 
 </body>

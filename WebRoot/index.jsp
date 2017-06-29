@@ -11,6 +11,7 @@
       <meta http-equiv="keywords" content="REVENUE,ACCOUNTING">
       <meta http-equiv="description" content="Revenue Accounting manage system">
       <jsp:include page="/WEB-INF/content/commonJsp/base.jsp" />
+      <jsp:include page="/WEB-INF/content/helpInfo.jsp" />
       <style type="text/css">
           .jqx-tabs-content,#tabDiv{
             background-size: 100%; 
@@ -97,7 +98,9 @@
               var index = $('#tabDiv').jqxTabs('selectedItem'); 
               var title = $("#tabDiv").jqxTabs("getTitleAt",index);
               var pageId = $("#tabDiv").jqxTabs("getContentAt", index)[0].lastChild.id;
-              layer.msg("打开\""+title+"("+pageId+")\"页面帮助", {icon:1});
+              $("#pageUrl").val(pageId);
+              $("#pageName").val(title);
+              queryHelpInfo(pageId);
             });
         });
         

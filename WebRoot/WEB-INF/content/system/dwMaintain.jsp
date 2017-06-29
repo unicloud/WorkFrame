@@ -5,17 +5,17 @@
 <head>
 <jsp:include page="/WEB-INF/content/commonJsp/base.jsp" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>客户汇总信息</title>
+<title>数据窗维护</title>
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="cache-control" content="no-cache">
 <meta http-equiv="expires" content="0">
 <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
-<meta http-equiv="description" content="客户汇总信息">
+<meta http-equiv="description" content="数据窗维护">
 
 <script type="text/javascript">
     var oneResultGridVars = {
-        queryDwName  : "DW_D_CUSTOMER_INFO_QUERY",
-        resultDwName : "DW_D_CUSTOMER_INFO_RESULT",
+        queryDwName  : "DW03_DWMAINTAIN_QUERY",
+        resultDwName : "DW03_DWMAINTAIN_RESULT",
         //查询窗口
         queryDwInfos : [],
         queryDatafields : [],
@@ -42,32 +42,15 @@
 </head>
 
 <body>
-    <div id="tabsMain">
-      <ul>
-          <li id="tab1">测试数据</li>
-      </ul>
-      <!--Tab1-->
-      <div style="overflow: hidden;">
-          <div id="tab1_oneSplitter" class="contentSplitter">
-              <div>
-                  <div id="tab1_widget" class="tabswidget">
-                      <ul>
-                          <li>灵活查询</li>
-                          <li>普通查询</li>
-                      </ul>
-                      <div style="overflow: hidden;">
-                          <div style="border:none;" id="tab1_flexQueryGrid"></div>
-                      </div>
-                      <div class="overflow: hidden;">
-                          <div style="border:none;" id="tab1_normQueryGrid"></div>
-                      </div>
-                  </div>
-              </div>
-              <div>
-                  <div style="border:none;" id="tab1_oneResultGrid"></div>
-              </div>
-          </div>
-      </div>
+    <div style="overflow: hidden;">
+        <div id="tab1_oneSplitter" class="contentSplitter">
+            <div>
+                <div style="border:none;" id="tab1_normQueryGrid"></div>
+            </div>
+            <div>
+                <div style="border:none;" id="tab1_oneResultGrid"></div>
+            </div>
+        </div>
     </div>
     <div id="tab1_oneResultGridEditWindow">
       <div id='tab1_oneResultGridEditWindowHeader'>
@@ -75,25 +58,19 @@
       </div>
       <div id = 'tab1_oneResultGridEditWindowContent'></div>
     </div>
-    <jsp:include page="/WEB-INF/content/commonJsp/fileUpload.jsp" />
     <script type="text/javascript">
-        $("#tabsMain").jqxTabs({theme : sysTheme,width: "100%", height: "100%" });
-
         $(".contentSplitter").jqxSplitter({ theme : sysTheme,width: "100%", height: "100%",
         orientation: 'horizontal',
         panels: [{ size: "20%"}, {size: "80%"}] 
         });
-        
-        $(".tabswidget").jqxTabs({theme : sysTheme,height: "100%",width: "100%" });
     </script>
     <script type="text/javascript" src="resources/uijs/commonjs/initGrid.js"></script>
-    <script type="text/javascript" src="resources/uijs/basic/customerScore.js"></script>
+    <script type="text/javascript" src="resources/uijs/commonjs/initCustomBtns.js"></script>
     <!--  id="jqxwidgets" -->
     <script type="text/javascript">
-        initFlexQueryGrid("tab1_flexQueryGrid", oneResultGridVars);
         initNormQueryWindow("tab1_normQueryGrid", oneResultGridVars);
-        initNoPagingGrid("tab1_oneResultGrid", oneResultGridVars, true);
-        initTab1Btns();
+        initPagingGrid("tab1_oneResultGrid", oneResultGridVars, true);
+        initCurdBtns("toolbartab1_oneResultGrid", "tab1_oneResultGrid", oneResultGridVars, "tab1");
     </script>
 
 </body>

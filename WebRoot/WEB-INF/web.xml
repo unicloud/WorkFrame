@@ -156,6 +156,33 @@
          <servlet-name>customerScore</servlet-name> 
          <url-pattern>/customerScore</url-pattern> 
      </servlet-mapping>
+    <!-- 数据窗维护 -->
+    <servlet>
+         <servlet-name>dwMaintain</servlet-name> 
+         <jsp-file>/WEB-INF/content/system/dwMaintain.jsp</jsp-file> 
+     </servlet> 
+     <servlet-mapping> 
+         <servlet-name>dwMaintain</servlet-name> 
+         <url-pattern>/dwMaintain</url-pattern> 
+     </servlet-mapping>
+    <!-- 基础列表维护 -->
+    <servlet>
+         <servlet-name>mdCodeList</servlet-name> 
+         <jsp-file>/WEB-INF/content/system/mdCodeList.jsp</jsp-file> 
+     </servlet> 
+     <servlet-mapping> 
+         <servlet-name>mdCodeList</servlet-name> 
+         <url-pattern>/mdCodeList</url-pattern>
+     </servlet-mapping>
+    <!-- 用户权限 -->
+    <servlet>
+         <servlet-name>userPrivilege</servlet-name> 
+         <jsp-file>/WEB-INF/content/system/userPrivilege.jsp</jsp-file> 
+     </servlet> 
+     <servlet-mapping> 
+         <servlet-name>userPrivilege</servlet-name> 
+         <url-pattern>/userPrivilege</url-pattern> 
+     </servlet-mapping>
 
      <!-- 此处代码写在最下面 -->
      <servlet-mapping>  

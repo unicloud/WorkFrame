@@ -270,10 +270,10 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
                 }
            }
         }
-        Map<String, Object> tMap = new HashMap<String, Object>();
+        /*Map<String, Object> tMap = new HashMap<String, Object>();
         tMap.put("TEXT", "");
         tMap.put("VALUE", "");
-        listMaps.add(tMap);
+        listMaps.add(tMap);*/
         return listMaps;        
     }
     

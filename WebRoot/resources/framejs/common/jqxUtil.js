@@ -98,7 +98,7 @@ var createSaveButton = function(container, id, theme) {
  * @param id 按钮ID
  * @return 获取工具栏的按钮
  */
-var createGridToolBarDelButton = function(container, id, theme) {
+var createDelButton = function(container, id, theme) {
     return createToolBarButton(container, "删除", "delete", "left", 60, 20, id, theme);
 };
 
@@ -208,15 +208,16 @@ var createToolBarButton = function(container, value, icon, float,width,height, I
 };
 
 /**
- * 创建用户控件（主要用于查询或者编辑窗口初始化）
+ * 创建编辑窗口用户控件
  * @param containerId 容器ID
  * @param item 控件项
+ * @param validator 验证rule
  * @param floatDirect 浮动方向
  * @param id 控件ID
  * @param theme 主题
  * @return 编辑控件
  */
-var createUserCtrl = function(containerId, item, floatDirect, Id, theme) {
+var createEditWindow = function(containerId, item, validator, floatDirect, Id, theme) {
     var container = $("#" + containerId);
     if (item == [] || item == undefined) {
         return;
@@ -230,8 +231,24 @@ var createUserCtrl = function(containerId, item, floatDirect, Id, theme) {
     if (theme == undefined) {
         theme = sysTheme;
     }
+    var showText = item.text;
+    if (item.notnull) {
+        //添加非空验证
+        if (item.columntype == "textbox" || item.columntype == "datetimeinput") {
+            validator.push({ input: "#" + Id, message: item.text + "不允许为空!", 
+                        action: "keyup, blur", rule: "required"});
+        }
+        if (item.columntype == "dropdownlist") {
+            validator.push({ input: "#" + Id, message: item.text + "不允许为空!", 
+                        action: "keyup, blur", rule: function() {
+                            var value = $('#' + Id).val();
+                            return value.length > 0;
+                        }});
+        }
+        showText = item.text + "<font color='red'>*</font>";
+    }
     var html = "<div style='margin: 5px 10px;float:" + floatDirect + ";width:250px;height:30px;background:rgba(200, 200, 200, 0.2);'>";
-    html = html + "<div style='float:left;text-align:justify;min-width:80px;max-width:80px;'>" + item.text + ":</div>";
+    html = html + "<div style='float:left;text-align:justify;min-width:80px;max-width:80px;'>" + showText + ":</div>";
     if (item.columntype == "textbox") {
         html = html + "<input type='text' id='" + Id + "' style='float:left;' />";
     } else { 
@@ -252,7 +269,8 @@ var createUserCtrl = function(containerId, item, floatDirect, Id, theme) {
             editCtrl.jqxDateTimeInput({showTimeButton: true});
         }
     } else if (item.columntype == "dropdownlist") {
-        editCtrl.jqxDropDownList({theme: sysTheme, checkboxes: true, width: '160px', height: "20px", placeHolder:'',
+        item.comboxList.push({'TEXT': '','VALUE': ''});
+        editCtrl.jqxDropDownList({theme: sysTheme, width: '160px', height: "20px", placeHolder:'',
             source: item.comboxList, displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: true, enableBrowserBoundsDetection : true 
         });
         if (item.comboxList.length >= 6) {
@@ -265,6 +283,60 @@ var createUserCtrl = function(containerId, item, floatDirect, Id, theme) {
     var specialField = item.datafield.toLocaleUpperCase();
     if (specialField == "PKID" || specialField == "CREATEUSER" || specialField == "CREATETIME" ||specialField == "MODIFYUSER" ||specialField == "MODIFYTIME") {
         setJqxDisabled(Id, true);
+    }
+};
+
+/**
+ * 创建普通查询窗口用户控件
+ * @param containerId 容器ID
+ * @param item 控件项
+ * @param floatDirect 浮动方向
+ * @param id 控件ID
+ * @param theme 主题
+ * @return 编辑控件
+ */
+var createNormQueryContent = function(containerId, item, floatDirect, Id, theme) {
+    var container = $("#" + containerId);
+    if (item == [] || item == undefined) {
+        return;
+    }
+    if (floatDirect == undefined) {
+        floatDirect = "left";
+    }
+    if (Id == undefined) {
+        Id = containerId + item.datafield;
+    }
+    if (theme == undefined) {
+        theme = sysTheme;
+    }
+    var html = "<div style='margin: 5px 10px;float:" + floatDirect + ";width:250px;height:30px;background:rgba(200, 200, 200, 0.2);'>";
+    html = html + "<div style='float:left;text-align:justify;min-width:80px;max-width:80px;'>" + item.text + ":</div>";
+    if (item.columntype == "textbox" || item.columntype == "numberinput") {
+        html = html + "<input type='text' id='" + Id + "' style='float:left;' />";
+    } else {
+        html = html + "<div id='" + Id + "' style='float:left;'></div>";
+    }
+    html = html + "</div>";
+    var userCtrl = $(html);
+    container.append(userCtrl);
+    var editCtrl = $("#" + Id);
+    if (item.columntype == "textbox" || item.columntype == "numberinput") {
+        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: '160px' , maxLength: item.dataLength });
+    }else if (item.columntype == "datetimeinput"){ 
+        editCtrl.jqxDateTimeInput({ theme: sysTheme,formatString: item.cellsformat, width: "160px", height: "20px", culture: "zh-CN", enableBrowserBoundsDetection : true });
+        if (item.cellsformat.indexOf("H") > 0) {
+            editCtrl.jqxDateTimeInput({showTimeButton: true});
+        }
+        //TODO:考虑将日期的查询条件扩展成时间区间
+    } else if (item.columntype == "dropdownlist") {
+        editCtrl.jqxDropDownList({theme: sysTheme, checkboxes: true, width: '160px', height: "20px", placeHolder:'',
+            source: item.comboxList, displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: true, enableBrowserBoundsDetection : true 
+        });
+        if (item.comboxList.length >= 6) {
+            editCtrl.jqxDropDownList({autoDropDownHeight: false, dropDownHeight: "160px"})
+        }
+    } else {
+        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: "160px" , maxLength: "100" });
     }
 };
 
@@ -306,6 +378,41 @@ function setJqxDisabled(itemId, disable) {
          $("#"+item.id).jqxNumberInput({disabled: true});
     } else if (className.indexOf("jqx-input") >=0) {
          $("#"+item.id).jqxInput({disabled: true});
+    }
+};
+
+/**
+ * 拼接灵活查询条件
+ * @param gridId 灵活查询gridID
+ */
+function generateFlexQueryCond(gridId) {
+
+};
+
+/**
+ * 拼接普通查询条件
+ * @param contentId 普通查询容器ID
+ */
+function generateNormQueryCond(contentId) {
+    var inputs = $("#" + contentId + " .jqx-widget[disabled!='disabled'][aria-disabled!='true']:not(.jqx-dropdownlist-state-disabled)");
+    for (var i = 0 ; i < inputs.length; i++) {
+        var item = inputs[i];
+        var className = item.className;
+        var itemVal = $("#"+item.id).val();
+        var itemId = "";
+        if (item.id != undefined) {
+            itemId = item.id.substring(contentId.length);
+        }
+        var itemType = "CHAR";
+        if (className.indexOf("jqx-datetimeinput") >= 0) {
+             itemType = "DATE";
+        } else if (className.indexOf("jqx-dropdownlist") >= 0) {
+             itemType = "CHAR";
+        } else if (className.indexOf("jqx-numberinput") >= 0) {
+             itemType = "NUM";
+        } else if (className.indexOf("jqx-input") >=0) {
+             itemType = "CHAR";
+        }
     }
 };
 //权限控制思路。判断如果是发布版，则进入各个页面之前获取页面的权限，根据权限初始化页面，否则不加载页面

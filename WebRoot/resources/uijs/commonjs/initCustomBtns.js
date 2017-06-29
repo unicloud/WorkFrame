@@ -13,17 +13,64 @@
  * @param gridId grid
  * @param gridVars grid参数
  */
-var initCurdBtns = function(containerId, btnTypes) {
+var initCurdBtns = function(containerId, gridId, gridVars, tabName) {
     //需要权限判断是否需要初始化
+    initNormQueryBtn(containerId, gridId, gridVars, tabName);
+    initAddBtn(containerId, gridId, gridVars, tabName);
+    initDelBtn(containerId, gridId, gridVars, tabName);
+    initSaveBtn(containerId, gridId, gridVars, tabName);
 };
 
 /**
- * @Title initQueryBtn 初始化查询btn
+ * @Title initNormQueryBtn 初始化普通查询btn
  * @param containerId 容器ID
  * @param gridId grid
  */
-var initQueryBtn = function(containerId, gridId) {
+var initNormQueryBtn = function(containerId, gridId, gridVars, tabName) {
+    var container = getToolBarContainer(containerId);
+    var queryBtn = createQueryButton(container, tabName + "_queryBtn");
+    queryBtn.click(function (event) {
+        //首先需要判断是什么查询，然后拼接查询条件
+        var queryCond1 = generateNormQueryCond(tabName + "_normQueryGrid");
+        var queryCond2 = generateFlexQueryCond(tabName + "_flexQueryGrid");
+        var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
+        query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
+    });
+};
 
+/**
+ * @Title initFlexQueryBtn 初始化灵活查询btn
+ * @param containerId 容器ID
+ * @param gridId grid
+ */
+var initFlexQueryBtn = function(containerId, gridId, gridVars, tabName) {
+    var container = getToolBarContainer(containerId);
+    var queryBtn = createQueryButton(container, tabName + "_queryBtn");
+    queryBtn.click(function (event) {
+        //首先需要判断是什么查询，然后拼接查询条件
+        var queryCond1 = generateNormQueryCond(tabName + "_normQueryGrid");
+        var queryCond2 = generateFlexQueryCond(tabName + "_flexQueryGrid");
+        var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
+        query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
+    });
+};
+
+/**
+ * @Title initMixQueryBtn 初始化混合查询btn
+ *      注： 混合查询指包含灵活查询和普通查询,需要判断当前查询窗口是哪个
+ * @param containerId 容器ID
+ * @param gridId grid
+ */
+var initMixQueryBtn = function(containerId, gridId, gridVars, tabName) {
+    var container = getToolBarContainer(containerId);
+    var queryBtn = createQueryButton(container, tabName + "_queryBtn");
+    queryBtn.click(function (event) {
+        //首先需要判断是什么查询，然后拼接查询条件
+        var queryCond1 = generateNormQueryCond(tabName + "_normQueryGrid");
+        var queryCond2 = generateFlexQueryCond(tabName + "_flexQueryGrid");
+        var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
+        query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
+    });
 };
 
 /**
@@ -31,8 +78,12 @@ var initQueryBtn = function(containerId, gridId) {
  * @param containerId 容器ID
  * @param gridId grid
  */
-var initAddBtn = function(containerId, gridId) {
+var initAddBtn = function(containerId, gridId, gridVars, tabName) {
+    var container = getToolBarContainer(containerId);
+    var addBtn = createAddButton(container, tabName + "_addBtn");
+    addBtn.click(function (event) {
 
+    });
 };
 
 /**
@@ -40,8 +91,12 @@ var initAddBtn = function(containerId, gridId) {
  * @param containerId 容器ID
  * @param gridId grid
  */
-var initDelBtn = function(containerId, gridId) {
-
+var initDelBtn = function(containerId, gridId, gridVars, tabName) {
+    var container = getToolBarContainer(containerId);
+    var delBtn = createDelButton(container, tabName + "_delBtn");
+    delBtn.click(function (event) {
+        
+    });
 };
 
 /**
@@ -58,8 +113,12 @@ var initEditBtn = function(containerId, gridId) {
  * @param containerId 容器ID
  * @param gridId grid
  */
-var initSaveBtn = function(containerId, gridId) {
-
+var initSaveBtn = function(containerId, gridId, gridVars, tabName) {
+    var container = getToolBarContainer(containerId);
+    var saveBtn = createSaveButton(container, tabName + "_saveBtn");
+    saveBtn.click(function (event) {
+        
+    });
 };
 
 /**
