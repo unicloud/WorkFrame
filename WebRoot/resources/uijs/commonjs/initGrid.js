@@ -83,6 +83,7 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             item.createeditor = function(row, value, editor) {
                 var autoHeight = true;
                 eval("var testList= " + editor[0].id + "List");
+                testList.push({"TEXT": "","VALUE": ""});
                 if (testList.length >= 6) {
                     autoHeight = false;
                 }
@@ -229,7 +230,8 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             "value": item.datafield, "values": {"name":"TEXT", "value":"VALUE", "source":item.comboxList}};
             gridVars.resultDatafields.push(txtFiledItem);
             item.displayfield = item.datafield + "TXT";
-            eval("var dropdownlisteditor" + gridId + item.datafield + "List = item.comboxList");
+            eval("var dropdownlisteditor" + gridId + item.datafield + "List = clone(item.comboxList)");
+            eval("dropdownlisteditor" + gridId + item.datafield + "List.push({'TEXT': '','VALUE': ''})");
             item.createeditor = function(row, value, editor) {
                 var autoHeight = true;
                 eval("var testList= " + editor[0].id + "List");
