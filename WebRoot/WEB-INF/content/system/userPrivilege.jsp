@@ -86,11 +86,13 @@
         $(".tabswidget").jqxTabs({theme : sysTheme,height: "100%",width: "100%" });
     </script>
     <script type="text/javascript" src="resources/uijs/commonjs/initGrid.js"></script>
+    <script type="text/javascript" src="resources/uijs/commonjs/initCustomBtns.js"></script>
     <!--  id="jqxwidgets" -->
     <script type="text/javascript">
         initFlexQueryGrid("tab1_flexQueryGrid", oneResultGridVars);
         initNormQueryWindow("tab1_normQueryGrid", oneResultGridVars);
-        initNoPagingGrid("tab1_oneResultGrid", oneResultGridVars, true);
+        initPagingGrid("tab1_oneResultGrid", oneResultGridVars, true);
+        initMixCurdBtns("toolbartab1_oneResultGrid", "tab1_oneResultGrid", oneResultGridVars, "tab1");
     </script>
 
 </body>

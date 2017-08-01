@@ -175,6 +175,25 @@ var createToolBarCustomButton = function(container, title, imgName, id, theme) {
 };
 
 /**
+ * 创建自定义（右侧）按钮
+ * @param theme 主题
+ * @param container 工具栏容器
+ * @param title 按钮文字
+ * @param imgName 图标
+ * @param id 按钮ID
+ * @return 获取工具栏的按钮
+ */
+var createToolBarRightButton = function(container, title, imgName, id, theme) {
+    var controlLength  = 60;
+    if (title.length > 2) {
+        controlLength = title.length * 20 ;
+    } else {
+        controlLength = 60;
+    }
+    return createToolBarButton(container, title, imgName, "right", controlLength, 20, id, theme);
+};
+
+/**
  * 获取工具栏的通用按钮
  * @param theme 主题
  * @param container 工具栏容器
@@ -183,14 +202,21 @@ var createToolBarCustomButton = function(container, title, imgName, id, theme) {
  * @param float 可选，对齐方式
  * @return 按钮
  */
-var createToolBarButton = function(container, value, icon, float,width,height, Id, theme) {
+var createToolBarButton = function(container, value, icon, float, width, height, Id, theme) {
     if (theme == undefined) {
         theme = sysTheme;
     }
-    var html = "<div style='margin-left: 5px;";   // display:none;
+    var html = "";
+    var floatDirect = "left";
     if (float != undefined) {
-        html = html + "float:" + float + ";";
+        floatDirect = float;
     }
+    if (floatDirect == "left") {
+        html = "<div style='margin-left: 5px;";   // display:none;
+    } else {
+        html = "<div style='margin-right: 20px;";   // display:none;
+    }
+    html = html + "float:" + floatDirect + ";";
     html = html + "'";
     if (Id != undefined) {
         html = html + " id='" + Id + "' ";
@@ -217,7 +243,7 @@ var createToolBarButton = function(container, value, icon, float,width,height, I
  * @param theme 主题
  * @return 编辑控件
  */
-var createEditWindow = function(containerId, item, validator, floatDirect, Id, theme) {
+var createEditWindowCtrl = function(containerId, item, validator, floatDirect, Id, theme) {
     var container = $("#" + containerId);
     if (item == [] || item == undefined) {
         return;
@@ -309,8 +335,12 @@ var createNormQueryContent = function(containerId, item, floatDirect, Id, theme)
     if (theme == undefined) {
         theme = sysTheme;
     }
+    var itemText = item.text;
+    if (item.isIndex) {
+        itemText = "<font color = 'blue'>" + item.text + "</font>";
+    }
     var html = "<div style='margin: 5px 10px;float:" + floatDirect + ";width:250px;height:30px;background:rgba(200, 200, 200, 0.2);'>";
-    html = html + "<div style='float:left;text-align:justify;min-width:80px;max-width:80px;'>" + item.text + ":</div>";
+    html = html + "<div style='float:left;text-align:justify;min-width:80px;max-width:80px;'>" + itemText + ":</div>";
     if (item.columntype == "textbox" || item.columntype == "numberinput") {
         html = html + "<input type='text' id='" + Id + "' style='float:left;' />";
     } else {
@@ -318,11 +348,11 @@ var createNormQueryContent = function(containerId, item, floatDirect, Id, theme)
     }
     html = html + "</div>";
     var userCtrl = $(html);
-    container.append(userCtrl);
+    $("#" + containerId).jqxPanel('append', userCtrl);
     var editCtrl = $("#" + Id);
     if (item.columntype == "textbox" || item.columntype == "numberinput") {
         editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: '160px' , maxLength: item.dataLength });
-    }else if (item.columntype == "datetimeinput"){ 
+    } else if (item.columntype == "datetimeinput"){ 
         editCtrl.jqxDateTimeInput({ theme: sysTheme,formatString: item.cellsformat, width: "160px", height: "20px", culture: "zh-CN", enableBrowserBoundsDetection : true });
         if (item.cellsformat.indexOf("H") > 0) {
             editCtrl.jqxDateTimeInput({showTimeButton: true});

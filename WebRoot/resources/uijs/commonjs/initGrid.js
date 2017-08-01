@@ -344,7 +344,6 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
  * @param canSave 是否提供保存按钮
  */
 var initEditWindow = function(containerId, gridVars, canSave) {
-    
     //弹出窗上的控件ID需要带一个随机数，以确保同一个页面上的控件ID可以区别开
     $("#" + containerId).jqxWindow({
         theme : sysTheme,
@@ -353,6 +352,33 @@ var initEditWindow = function(containerId, gridVars, canSave) {
         height: "95%",
         width: "95%",
         resizable: true
+    });
+    //切换是否限制大写
+    var fontSwitchbtn = createToolBarRightButton($("#" + containerId + "Header"), "取消大写限制", "font");
+    fontSwitchbtn.click(function (event) {
+        $("#" + containerId + "Content .jqx-input").unbind("blur");
+        if (this.innerHTML.indexOf("取消") > 0) {
+            $("#" + containerId + "Content .jqx-input").bind("blur",function(event) {
+            });
+            this.innerHTML = this.innerHTML.replace("取消","设置");
+        } else {
+            //首先将所有的jqx-input的值设置为大写
+            var inputs = $("#" + containerId + "Content .jqx-input:not(.jqx-input-disabled)");
+            for (var i = 0 ; i < inputs.length; i++) {
+                var value = $.trim($("#" +  inputs[i].id).val());
+                value = value.toLocaleUpperCase();
+                $("#" +  inputs[i].id).val(value);
+            }
+            //其次添加blur事件
+            $("#" + containerId + "Content .jqx-input").bind("blur",function(event) {
+                var input = event.target;
+                var ctrlId = input.id;
+                var value = $.trim($("#" +  ctrlId).val());
+                value = value.toLocaleUpperCase();
+                $("#" +  ctrlId).val(value);
+            });
+            this.innerHTML = this.innerHTML.replace("设置", "取消");
+        }
     });
     if (gridVars.resulDwInfos.length == 0) {
         queryDwInfo(gridVars);
@@ -365,11 +391,21 @@ var initEditWindow = function(containerId, gridVars, canSave) {
     var validator = new Array();
     for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
-        createEditWindow(containerId + "Content", item, validator);
+        createEditWindowCtrl(containerId + "Content", item, validator);
     }
+    //添加保存 和 取消按钮
+    
     //添加控件验证
     $("#" + containerId + "Content").jqxValidator({
         rules: validator
+    });
+    //默认将所有文本编辑框变成大写限制
+    $("#" + containerId + "Content .jqx-input").blur(function(event) {
+        var input = event.target;
+        var ctrlId = input.id;
+        var value = $.trim($("#" +  ctrlId).val());
+        value = value.toLocaleUpperCase();
+        $("#" +  ctrlId).val(value);
     });
     //将enter键模拟成Tab键
     $("#" + containerId + "Content .jqx-widget").keydown(function(e) {
@@ -405,6 +441,23 @@ var initEditWindow = function(containerId, gridVars, canSave) {
             }
         }
     });
+    //添加保存、取消按钮
+    $("#" + containerId + "Content").append($("<div style='clear:both;'></div>"));
+    $("#" + containerId + "Content").append($("<div style='margin-right: 20px;float:right; width: 60px; height: 20px;'></div>"));
+    var canxbtn = createToolBarRightButton($("#" + containerId + "Content"), "取消", "delete", containerId + "_canxBtn");
+    var savebtn = createToolBarRightButton($("#" + containerId + "Content"), "保存", "disk", containerId + "_saveBtn");
+    // 关闭弹出窗口
+    canxbtn.click(function() {
+        $("#" + containerId + "Content").jqxValidator('hide');
+        $("#" + containerId).jqxWindow("close");
+    });
+    // 保存弹出窗口
+    savebtn.click(function() {
+        var validateResult = $("#" + containerId + "Content").jqxValidator('validate');
+        if (!validateResult) {
+            return;
+        }
+    });
 };
 
 /**
@@ -422,6 +475,7 @@ var initNormQueryWindow = function(containerId, gridVars) {
     if (gridVars.queryDwInfos.length == 0) {
         return;
     }
+    $("#" + containerId).jqxPanel({ width: "100%", height: "100%"});
     var columns = clone(gridVars.queryDwInfos.disColumns);
     for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];

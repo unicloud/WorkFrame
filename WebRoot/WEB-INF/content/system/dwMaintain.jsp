@@ -70,7 +70,7 @@
     <script type="text/javascript">
         initNormQueryWindow("tab1_normQueryGrid", oneResultGridVars);
         initPagingGrid("tab1_oneResultGrid", oneResultGridVars, true);
-        initCurdBtns("toolbartab1_oneResultGrid", "tab1_oneResultGrid", oneResultGridVars, "tab1");
+        initNormCurdBtns("toolbartab1_oneResultGrid", "tab1_oneResultGrid", oneResultGridVars, "tab1");
     </script>
 
 </body>
