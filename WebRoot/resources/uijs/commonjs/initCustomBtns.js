@@ -84,8 +84,13 @@ var initFlexQueryBtn = function(containerId, gridId, gridVars, tabName) {
     var queryBtn = createQueryButton(container, tabName + "_queryBtn");
     queryBtn.click(function (event) {
         //首先需要判断是什么查询，然后拼接查询条件
-        var queryCond1 = generateNormQueryCond(tabName + "_normQueryGrid");
-        var queryCond2 = generateFlexQueryCond(tabName + "_flexQueryGrid");
+        var queryCond = "";
+        var selectedItem = $("#" + tabName + "_widget").jqxTabs('selectedItem');
+        if (selectedItem == 0) {
+            queryCond = generateFlexQueryCond(tabName + "_flexQueryGrid", gridVars);
+        } else {
+            queryCond = generateNormQueryCond(tabName + "_normQueryGrid");
+        }
         var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
         query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
     });
@@ -105,7 +110,7 @@ var initMixQueryBtn = function(containerId, gridId, gridVars, tabName) {
     queryBtn.click(function (event) {
         //首先需要判断是什么查询，然后拼接查询条件
         var queryCond1 = generateNormQueryCond(tabName + "_normQueryGrid");
-        var queryCond2 = generateFlexQueryCond(tabName + "_flexQueryGrid");
+        var queryCond2 = generateFlexQueryCond(tabName + "_flexQueryGrid", gridVars);
         var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
         query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
     });

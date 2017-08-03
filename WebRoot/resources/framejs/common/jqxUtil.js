@@ -341,24 +341,18 @@ var createNormQueryContent = function(containerId, item, floatDirect, Id, theme)
     }
     var html = "<div style='margin: 5px 10px;float:" + floatDirect + ";width:250px;height:30px;background:rgba(200, 200, 200, 0.2);'>";
     html = html + "<div style='float:left;text-align:justify;min-width:80px;max-width:80px;'>" + itemText + ":</div>";
-    if (item.columntype == "textbox" || item.columntype == "numberinput") {
-        html = html + "<input type='text' id='" + Id + "' style='float:left;' />";
-    } else {
+    if (item.columntype == "dropdownlist") {
         html = html + "<div id='" + Id + "' style='float:left;'></div>";
+    } else if (item.columntype == "datetimeinput") {
+        html = html + "<input type='text' id='" + Id + "' style='float:left;' class='datetimeinput' />";
+    } else {
+        html = html + "<input type='text' id='" + Id + "' style='float:left;' />";
     }
     html = html + "</div>";
     var userCtrl = $(html);
     $("#" + containerId).jqxPanel('append', userCtrl);
     var editCtrl = $("#" + Id);
-    if (item.columntype == "textbox" || item.columntype == "numberinput") {
-        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: '160px' , maxLength: item.dataLength });
-    } else if (item.columntype == "datetimeinput"){ 
-        editCtrl.jqxDateTimeInput({ theme: sysTheme,formatString: item.cellsformat, width: "160px", height: "20px", culture: "zh-CN", enableBrowserBoundsDetection : true });
-        if (item.cellsformat.indexOf("H") > 0) {
-            editCtrl.jqxDateTimeInput({showTimeButton: true});
-        }
-        //TODO:考虑将日期的查询条件扩展成时间区间
-    } else if (item.columntype == "dropdownlist") {
+    if (item.columntype == "dropdownlist") {
         editCtrl.jqxDropDownList({theme: sysTheme, checkboxes: true, width: '160px', height: "20px", placeHolder:'',
             source: item.comboxList, displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: true, enableBrowserBoundsDetection : true 
         });
@@ -366,7 +360,7 @@ var createNormQueryContent = function(containerId, item, floatDirect, Id, theme)
             editCtrl.jqxDropDownList({autoDropDownHeight: false, dropDownHeight: "160px"})
         }
     } else {
-        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: "160px" , maxLength: "100" });
+        editCtrl.jqxInput({theme: sysTheme,  height: "20px", width: "160px" });
     }
 };
 
@@ -414,9 +408,34 @@ function setJqxDisabled(itemId, disable) {
 /**
  * 拼接灵活查询条件
  * @param gridId 灵活查询gridID
+ * @param gridVars gridVars
  */
-function generateFlexQueryCond(gridId) {
-
+function generateFlexQueryCond(gridId, gridVars) {
+    var dataRows = $("#" + gridId).jqxGrid('getrows');
+    var dataRowsSize = dataRows.length;
+    var columns = clone(gridVars.queryDwInfos.disColumns);
+    var flexQueryCond = [];
+    for (var j = 0; j < dataRowsSize; j++) {
+        var rowCond = new Array();
+        var rowdata = dataRows[j];
+        for (var i = 0; i < columns.length; i++) {
+            var col = columns[i];
+            var itemVal = rowdata[col.datafield];
+            if (itemVal == undefined || itemVal == "") {
+                continue;
+            }
+            var arr = getQueryOperatorAndValue(itemVal);
+            var colCond = {"colName":col.datafield, "colOperator":arr[1], "colVal":arr[2], "colType":"CHAR", "colRelate":arr[0]};
+            if (col.columntype == "datetimeinput") {
+                colCond.colType = "DATE";
+            }
+            rowCond.push(colCond);
+        }
+        if (rowCond.length > 0) {
+            flexQueryCond.push(rowCond);
+        }
+    };
+    return flexQueryCond;
 };
 
 /**
@@ -424,26 +443,103 @@ function generateFlexQueryCond(gridId) {
  * @param contentId 普通查询容器ID
  */
 function generateNormQueryCond(contentId) {
-    var inputs = $("#" + contentId + " .jqx-widget[disabled!='disabled'][aria-disabled!='true']:not(.jqx-dropdownlist-state-disabled)");
+    var inputs = $("#" + contentId + " .jqx-widget");
+    var normQueryCond = [];
+    var rowCond = new Array();
     for (var i = 0 ; i < inputs.length; i++) {
         var item = inputs[i];
-        var className = item.className;
-        var itemVal = $("#"+item.id).val();
-        var itemId = "";
-        if (item.id != undefined) {
-            itemId = item.id.substring(contentId.length);
+        var itemId = item.id;
+        var colName = itemId.substring(contentId.length);
+        var itemVal = $("#"+itemId).val();
+        if (itemVal == undefined || itemVal == "") {
+            continue;
         }
-        var itemType = "CHAR";
-        if (className.indexOf("jqx-datetimeinput") >= 0) {
-             itemType = "DATE";
-        } else if (className.indexOf("jqx-dropdownlist") >= 0) {
-             itemType = "CHAR";
-        } else if (className.indexOf("jqx-numberinput") >= 0) {
-             itemType = "NUM";
-        } else if (className.indexOf("jqx-input") >=0) {
-             itemType = "CHAR";
+        var className = inputs[i].className;
+        var colCond = "";
+        if (className.indexOf("jqx-dropdownlist") >= 0) {
+            colCond = {"colName":colName, "colOperator":"INSTR", "colVal": itemVal, "colType":"CHAR", "colRelate":"AND"};
+            rowCond.push(colCond);
+        } else if (className.indexOf("jqx-input") >= 0) {
+            //拼接这个条件的值
+            var arr = getQueryOperatorAndValue(itemVal);
+            colCond = {"colName":colName, "colOperator":arr[1], "colVal":arr[2], "colType":"CHAR", "colRelate":arr[0]};
+            if (item.className.indexOf("datetimeinput") >= 0) {
+                colCond.colType = "DATE";
+            }
+            rowCond.push(colCond);
         }
     }
+    if (rowCond.length > 0) {
+        normQueryCond.push(rowCond);
+    }
+    return normQueryCond;
+};
+
+/**
+ * 从输入的条件中分离出连接符、操作符和值
+ * @param srcvalue
+ * @return 返回连接符、操作符和值（如{"colOperator":"LIKE","colVal":"AA","colRelate": "AND",}）
+ */
+var getQueryOperatorAndValue = function(srcvalue) {
+    var srcvalueUpper = $.trim(srcvalue).toLocaleUpperCase();
+    var cellArray = new Array();
+    // 设置默认的 关联符号
+    cellArray[0] = "AND";
+    //先取 AND OR 关联符号
+    if (srcvalueUpper.indexOf("AND ") == 0){
+        cellArray[0] = "AND";
+        srcvalue = $.trim(srcvalue.substring(3));
+    } else if (srcvalueUpper.indexOf("OR ") == 0) {
+        cellArray[0] = "OR";
+        srcvalue = $.trim(srcvalue.substring(2));
+    }
+    // 分离出 关联符后,再一次进行 大写转换,分离出 LIKE IN NOT 等
+    srcvalueUpper = srcvalue.toLocaleUpperCase();
+
+    if (srcvalueUpper.indexOf(">=") == 0) {
+        cellArray[1] = ">=";
+        cellArray[2] = $.trim(srcvalue.substring(2));
+    } else if ((srcvalueUpper.indexOf(">") == 0)) {
+        cellArray[1] = ">";
+        cellArray[2] = $.trim(srcvalue.substring(1));
+    } else if ((srcvalueUpper.indexOf("<=") == 0)) {
+        cellArray[1] = "<=";
+        cellArray[2] = $.trim(srcvalue.substring(2));
+    } else if ((srcvalueUpper.indexOf("<>") == 0)) {
+        cellArray[1] = "<>";
+        cellArray[2] = $.trim(srcvalue.substring(2));
+    } else if ((srcvalueUpper.indexOf("<") == 0)) {
+        cellArray[1] = "<";
+        cellArray[2] = $.trim(srcvalue.substring(1));
+    } else if ((srcvalueUpper.indexOf("=") == 0)) {
+        cellArray[1] = "=";
+        cellArray[2] = $.trim(srcvalue.substring(1));
+    } else if ((srcvalueUpper.indexOf("IN ") == 0)) {
+        cellArray[1] = "IN";
+        cellArray[2] = $.trim(srcvalue.substring(3));
+    } else if ((srcvalueUpper.indexOf("NOT IN ") > -1)) {
+        cellArray[1] = "NOT IN";
+        cellArray[2] = $.trim(srcvalue.substring(7));
+    } else if ((srcvalueUpper.indexOf("LIKE ") == 0)) {
+        cellArray[1] = "LIKE";
+        cellArray[2] = $.trim(srcvalue.substring(4));
+    } else if ((srcvalueUpper.indexOf("NOT LIKE ") > -1)) {
+        cellArray[1] = "NOT LIKE";
+        cellArray[2] = $.trim(srcvalue.substring(8));
+    } else if ((srcvalueUpper.indexOf("IS NULL") > -1)) {
+        cellArray[1] = "IS NULL";
+        cellArray[2] = "";
+    } else if ((srcvalueUpper.indexOf("IS NOT NULL") > -1)) {
+        cellArray[1] = "IS NOT NULL";
+        cellArray[2] = "";
+    } else if ((srcvalueUpper.indexOf("NVL ") == 0)) {
+        cellArray[1] = "NVL";
+        cellArray[2] = $.trim(srcvalue.substring(4));
+    }  else {
+        cellArray[1] = "=";
+        cellArray[2] = srcvalue;
+    }
+    return cellArray ;
 };
 //权限控制思路。判断如果是发布版，则进入各个页面之前获取页面的权限，根据权限初始化页面，否则不加载页面
 //根据权限加载页面时区分tab页权限，按钮权限，右键菜单权限

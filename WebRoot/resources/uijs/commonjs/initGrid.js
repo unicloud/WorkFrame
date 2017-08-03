@@ -393,8 +393,6 @@ var initEditWindow = function(containerId, gridVars, canSave) {
         var item =  columns[i];
         createEditWindowCtrl(containerId + "Content", item, validator);
     }
-    //添加保存 和 取消按钮
-    
     //添加控件验证
     $("#" + containerId + "Content").jqxValidator({
         rules: validator
@@ -466,8 +464,6 @@ var initEditWindow = function(containerId, gridVars, canSave) {
  * @param gridVars grid参数
  */
 var initNormQueryWindow = function(containerId, gridVars) {
-    //弹出窗上的控件ID需要带一个随机数，以确保同一个页面上的控件ID可以区别开
-    //日期类型（区分是否需要到时分秒）、数值类型（保留位数）、文本类型（长文本）、下拉列表（区分单选、多选）
     if (gridVars.queryDwInfos.length == 0) {
         queryDwInfo(gridVars, "query");
     }
@@ -479,7 +475,6 @@ var initNormQueryWindow = function(containerId, gridVars) {
     var columns = clone(gridVars.queryDwInfos.disColumns);
     for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
-        if (item.datafield)
         createNormQueryContent(containerId, item);
     }
     //将enter键模拟成Tab键
@@ -516,6 +511,23 @@ var initNormQueryWindow = function(containerId, gridVars) {
             }
         }
     });
+    //对于日期字段,需要验证日期格式
+    $("#" + containerId + " .datetimeinput").blur(function(event) {
+        var input = event.target;
+        var ctrlId = input.id;
+        var value = $.trim($("#" +  ctrlId).val());
+        value = value.toLocaleUpperCase();
+        value = getQueryOperatorAndValue(value)[2];
+        // 对日期数据进行验证
+        if (value != "" && !dateReg.test(value)) {
+            layer.alert("日期格式有误,正确格式应为[YYYYMMDD]或[YYYY-MM-DD]或[YYYY/MM/DD],请修改后再进行查询",
+                {icon: 2,title: "系统提示"},function (index){
+                    $("#" +  ctrlId).val("");
+                    layer.close(index);
+                }
+            );
+        }
+    });
 };
 
 /**
@@ -537,6 +549,7 @@ var initFlexQueryGrid = function(gridId, gridVars) {
     //datafields需要做处理： 数值、日期类型都得处理成文本类型
     for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
+        item.classname = item.columntype;
         if (item.columntype == "numberinput" || item.columntype == "datetimeinput") {
             item.columntype = "textbox";
             item.cellsformat = "";
@@ -558,7 +571,7 @@ var initFlexQueryGrid = function(gridId, gridVars) {
         }
         //如果是索引
         if (item.isIndex) {
-            item.classname = "indexField";
+            item.classname = item.columntype + " indexField";
         }
         var filedItem = {"name" : item.datafield, "type" : "string"};
         gridVars.queryColumns.push(item);
@@ -611,4 +624,36 @@ var initFlexQueryGrid = function(gridId, gridVars) {
     $("#" + gridId).on('contextmenu',function() {
         return false;
     });
+
+    $("#" + gridId).on('cellendedit', function(event) {
+        judgeFlexCond(gridId, event);
+    });
+};
+
+/**
+ * @Title judgeFlexCond 校验灵活查询输入的查询条件
+ * @param gridId gridId
+ * @param event 查询条件编辑完成事件
+ */
+var judgeFlexCond = function(gridId, event) {
+    // event arguments.
+    var args = event.args;
+    // column data field.
+    var dataField = event.args.datafield;
+    // cell value
+    var value = args.value;
+    var col = $("#" + gridId).jqxGrid('getcolumn',dataField);
+    if (col.classname.indexOf("datetimeinput") >= 0) {
+        value = getQueryOperatorAndValue(value)[2];
+        // 对日期数据进行验证
+        if (value != "" && !dateReg.test(value)) {
+            layer.alert("日期格式有误,正确格式应为[YYYYMMDD]或[YYYY-MM-DD]或[YYYY/MM/DD],请修改后再进行查询",
+                {icon: 2,title: "系统提示"},function (index){
+                        $("#" + gridId).jqxGrid('setcellvalue', args.rowindex, dataField, "");
+                        layer.close(index);
+                    }
+            );
+            return ;
+        }
+    }
 };
