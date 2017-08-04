@@ -481,6 +481,8 @@ function generateNormQueryCond(contentId) {
  * @return 返回连接符、操作符和值（如{"colOperator":"LIKE","colVal":"AA","colRelate": "AND",}）
  */
 var getQueryOperatorAndValue = function(srcvalue) {
+    //先去除前后空格
+    srcvalue = $.trim(srcvalue);
     var srcvalueUpper = $.trim(srcvalue).toLocaleUpperCase();
     var cellArray = new Array();
     // 设置默认的 关联符号
@@ -494,50 +496,58 @@ var getQueryOperatorAndValue = function(srcvalue) {
         srcvalue = $.trim(srcvalue.substring(2));
     }
     // 分离出 关联符后,再一次进行 大写转换,分离出 LIKE IN NOT 等
-    srcvalueUpper = srcvalue.toLocaleUpperCase();
-
+    srcvalueUpper = $.trim(srcvalue).toLocaleUpperCase();
+    //设置初始值
+    cellArray[1] = "=";
+    cellArray[2] = $.trim(srcvalue);
     if (srcvalueUpper.indexOf(">=") == 0) {
         cellArray[1] = ">=";
         cellArray[2] = $.trim(srcvalue.substring(2));
-    } else if ((srcvalueUpper.indexOf(">") == 0)) {
+    } else if (srcvalueUpper.indexOf(">") == 0) {
         cellArray[1] = ">";
         cellArray[2] = $.trim(srcvalue.substring(1));
-    } else if ((srcvalueUpper.indexOf("<=") == 0)) {
+    } else if (srcvalueUpper.indexOf("<=") == 0) {
         cellArray[1] = "<=";
         cellArray[2] = $.trim(srcvalue.substring(2));
-    } else if ((srcvalueUpper.indexOf("<>") == 0)) {
+    } else if (srcvalueUpper.indexOf("<>") == 0) {
         cellArray[1] = "<>";
         cellArray[2] = $.trim(srcvalue.substring(2));
-    } else if ((srcvalueUpper.indexOf("<") == 0)) {
+    } else if (srcvalueUpper.indexOf("<") == 0) {
         cellArray[1] = "<";
         cellArray[2] = $.trim(srcvalue.substring(1));
-    } else if ((srcvalueUpper.indexOf("=") == 0)) {
+    } else if (srcvalueUpper.indexOf("=") == 0) {
         cellArray[1] = "=";
         cellArray[2] = $.trim(srcvalue.substring(1));
-    } else if ((srcvalueUpper.indexOf("IN ") == 0)) {
+    } else if (srcvalueUpper.indexOf("IN ") == 0) {
         cellArray[1] = "IN";
         cellArray[2] = $.trim(srcvalue.substring(3));
-    } else if ((srcvalueUpper.indexOf("NOT IN ") > -1)) {
-        cellArray[1] = "NOT IN";
-        cellArray[2] = $.trim(srcvalue.substring(7));
-    } else if ((srcvalueUpper.indexOf("LIKE ") == 0)) {
+    } else if (srcvalueUpper.indexOf("LIKE ") == 0) {
         cellArray[1] = "LIKE";
         cellArray[2] = $.trim(srcvalue.substring(4));
-    } else if ((srcvalueUpper.indexOf("NOT LIKE ") > -1)) {
-        cellArray[1] = "NOT LIKE";
-        cellArray[2] = $.trim(srcvalue.substring(8));
-    } else if ((srcvalueUpper.indexOf("IS NULL") > -1)) {
-        cellArray[1] = "IS NULL";
-        cellArray[2] = "";
-    } else if ((srcvalueUpper.indexOf("IS NOT NULL") > -1)) {
-        cellArray[1] = "IS NOT NULL";
-        cellArray[2] = "";
-    } else if ((srcvalueUpper.indexOf("NVL ") == 0)) {
+    } else if (srcvalueUpper.indexOf("NOT ") == 0) {
+        var nextStr = $.trim(srcvalueUpper.substring(4));
+        if (nextStr.indexOf("IN ") == 0) {
+            cellArray[1] = "NOT IN";
+            cellArray[2] = $.trim(nextStr.substring(3));
+        } else if (nextStr.indexOf("LIKE ") == 0) {
+            cellArray[1] = "NOT LIKE";
+            cellArray[2] = $.trim(nextStr.substring(5));
+        }
+    } else if (srcvalueUpper.indexOf("IS ") == 0) {
+        var nextStr = $.trim(srcvalueUpper.substring(3));
+        if (nextStr == "NULL" || nextStr.indexOf("NULL ") == 0) {
+            cellArray[1] = "IS NULL";
+            cellArray[2] = "";
+        } else if (nextStr.indexOf("NOT ") == 0) {
+            var secondStr = $.trim(nextStr.substring(4));
+            if (secondStr == "NULL" || secondStr.indexOf("NULL ") == 0) {
+                cellArray[1] = "IS NOT NULL";
+                cellArray[2] = "";
+            }
+        }
+    } else if (srcvalueUpper.indexOf("NVL ") == 0) {
         cellArray[1] = "NVL";
         cellArray[2] = $.trim(srcvalue.substring(4));
-    }  else {
-        cellArray[1] = "=";
-        cellArray[2] = srcvalue;
     }
     return cellArray ;
 };

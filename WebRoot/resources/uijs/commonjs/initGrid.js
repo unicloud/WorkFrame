@@ -153,9 +153,12 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         autoBind: false,
         downloadComplete: function (data, status, xhr) { },
         loadComplete: function (data) {
+            $("#jqxLoader").jqxLoader('close');
             $("#"+gridId).jqxGrid("autoresizecolumns");//调整列以适应文本
         },
         loadError: function (xhr, status, error) {
+            $("#jqxLoader").jqxLoader('close');
+            layer.alert("数据加载异常！",{icon:8});
         }
     });
     
@@ -188,8 +191,29 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         filterable: true
     });
 
+    //去除默认的右键菜单
     $("#" + gridId).on('contextmenu',function() {
         return false;
+    });
+
+    //排序事件
+    $("#" + gridId).on("sort", function(event) {
+        var rows = $("#" + gridId).jqxGrid('getrows');
+        if (rows.length == 0) {
+            $("#" + gridId).jqxGrid('removesort');
+            return;
+        }
+        $("#" + gridId).jqxGrid("updatebounddata");
+    });
+
+    //过滤事件
+    $("#" + gridId).on("filter", function(event) {
+        var rows = $("#" + gridId).jqxGrid('getrows');
+        if (rows.length == 0) {
+            $("#" + gridId).jqxGrid('clearfilters', false);
+            return;
+        }
+        $("#" + gridId).jqxGrid("updatebounddata");
     });
 
     if (hasEditWindow) {
@@ -304,9 +328,12 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         autoBind: false,
         downloadComplete: function (data, status, xhr) { },
         loadComplete: function (data) {
+            $("#jqxLoader").jqxLoader('close');
             $("#"+gridId).jqxGrid("autoresizecolumns");//调整列以适应文本
         },
         loadError: function (xhr, status, error) {
+            $("#jqxLoader").jqxLoader('close');
+            layer.alert("数据加载异常！",{icon:8});
         }
     });
     
@@ -328,8 +355,29 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         columns : gridVars.resultColumns
     });
 
+    //去除默认的右键菜单
     $("#" + gridId).on('contextmenu',function() {
         return false;
+    });
+
+    //排序事件
+    $("#" + gridId).on("sort", function(event) {
+        var rows = $("#" + gridId).jqxGrid('getrows');
+        if (rows.length == 0) {
+            $("#" + gridId).jqxGrid('removesort');
+            return;
+        }
+        $("#" + gridId).jqxGrid("updatebounddata");
+    });
+
+    //过滤事件
+    $("#" + gridId).on("filter", function(event) {
+        var rows = $("#" + gridId).jqxGrid('getrows');
+        if (rows.length == 0) {
+            $("#" + gridId).jqxGrid('clearfilters', false);
+            return;
+        }
+        $("#" + gridId).jqxGrid("updatebounddata");
     });
 
     if (hasEditWindow) {

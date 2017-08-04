@@ -79,3 +79,12 @@
 
     //加载当前页面权限(含Tab\Btn权限) TODO
 </script>
+<div id="jqxLoader">
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#jqxLoader").jqxLoader({theme:sysTheme,text: "请等待……",
+            width: 120, height: 30, isModal: true});
+        $("#jqxLoaderModal")[0].style.zIndex = 19891014;
+    });
+</script>

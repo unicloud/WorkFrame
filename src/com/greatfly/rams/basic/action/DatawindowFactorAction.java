@@ -91,6 +91,7 @@ public class DatawindowFactorAction extends BaseAction {
                         String.valueOf(datawindowFactorVo.getPagesize()));
                 MdDatawindowFactor curDwfactor = datawindowFactorService.getCurDatawindowFactor(datawindowFactorVo.getDwName());
                 //1、拼接SELECT语句 SELECT * FROM TABLE WHERE 1 = 1
+                
                 //2、拼接WHERE条件（注意GROUP BY\ORDER BY子句、注意UNION语句可能形成多个FROM\WHERE）
 //                datawindowFactorService.GenerateQuerySQL(datawindowFactorVo);
                 //3、根据PS拼接分页语句(优化查询)

@@ -65,9 +65,13 @@ var initNormQueryBtn = function(containerId, gridId, gridVars, tabName) {
     var queryBtn = createQueryButton(container, tabName + "_queryBtn");
     queryBtn.click(function (event) {
         //首先需要判断是什么查询，然后拼接查询条件
-        var queryCond1 = generateNormQueryCond(tabName + "_normQueryGrid");
-        var queryCond2 = generateFlexQueryCond(tabName + "_flexQueryGrid");
+        var queryCond = generateNormQueryCond(tabName + "_normQueryGrid");
+        if (queryCond.length == 0) {
+            layer.alert("请输入查询条件！", {icon :8});
+            return;
+        }
         var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
+        $("#jqxLoader").jqxLoader('open');
         query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
     });
 };
@@ -84,14 +88,13 @@ var initFlexQueryBtn = function(containerId, gridId, gridVars, tabName) {
     var queryBtn = createQueryButton(container, tabName + "_queryBtn");
     queryBtn.click(function (event) {
         //首先需要判断是什么查询，然后拼接查询条件
-        var queryCond = "";
-        var selectedItem = $("#" + tabName + "_widget").jqxTabs('selectedItem');
-        if (selectedItem == 0) {
-            queryCond = generateFlexQueryCond(tabName + "_flexQueryGrid", gridVars);
-        } else {
-            queryCond = generateNormQueryCond(tabName + "_normQueryGrid");
+        var queryCond = generateFlexQueryCond(tabName + "_flexQueryGrid", gridVars);
+        if (queryCond.length == 0) {
+            layer.alert("请输入查询条件！", {icon :8});
+            return;
         }
         var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
+        $("#jqxLoader").jqxLoader('open');
         query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
     });
 };
@@ -109,9 +112,19 @@ var initMixQueryBtn = function(containerId, gridId, gridVars, tabName) {
     var queryBtn = createQueryButton(container, tabName + "_queryBtn");
     queryBtn.click(function (event) {
         //首先需要判断是什么查询，然后拼接查询条件
-        var queryCond1 = generateNormQueryCond(tabName + "_normQueryGrid");
-        var queryCond2 = generateFlexQueryCond(tabName + "_flexQueryGrid", gridVars);
+        var queryCond = "";
+        var selectedItem = $("#" + tabName + "_widget").jqxTabs('selectedItem');
+        if (selectedItem == 0) {
+            queryCond = generateFlexQueryCond(tabName + "_flexQueryGrid", gridVars);
+        } else {
+            queryCond = generateNormQueryCond(tabName + "_normQueryGrid");
+        }
+        if (queryCond.length == 0) {
+            layer.alert("请输入查询条件！", {icon :8});
+            return;
+        }
         var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
+        $("#jqxLoader").jqxLoader('open');
         query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
     });
 };
