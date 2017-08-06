@@ -1,7 +1,10 @@
 package com.greatfly.rams.basic.action;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.springframework.context.annotation.Scope;
@@ -9,7 +12,6 @@ import org.springframework.stereotype.Controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.greatfly.common.CommonConstant;
 import com.greatfly.common.action.BaseAction;
 import com.greatfly.common.annotation.Description;
 import com.greatfly.common.util.PageSupport;
@@ -82,7 +84,8 @@ public class DatawindowFactorAction extends BaseAction {
             datawindowFactorVo = getRequestVo(DatawindowFactorVo.class);
             //初始化时whereJson = -1 ,不用查询
             boolean ifSuccess = true;
-            if (datawindowFactorVo.getWhereJson().equals("-1")) {
+            String whereJson = datawindowFactorVo.getWhereJson();
+            if (whereJson.equals("-1")) {
                 jsonString = CommonMsgOutput.getResponseJson(true, 0, new JSONArray(), "0", "select");
                 ifSuccess = false;
             }
@@ -90,14 +93,11 @@ public class DatawindowFactorAction extends BaseAction {
                 ps = initPs(String.valueOf(datawindowFactorVo.getPagenum()), 
                         String.valueOf(datawindowFactorVo.getPagesize()));
                 MdDatawindowFactor curDwfactor = datawindowFactorService.getCurDatawindowFactor(datawindowFactorVo.getDwName());
-                //1、拼接SELECT语句 SELECT * FROM TABLE WHERE 1 = 1
-                
-                //2、拼接WHERE条件（注意GROUP BY\ORDER BY子句、注意UNION语句可能形成多个FROM\WHERE）
-//                datawindowFactorService.GenerateQuerySQL(datawindowFactorVo);
-                //3、根据PS拼接分页语句(优化查询)
-                //4、写一个通用的方法，传入SQL语句，返回Json数据集
-                //注意WHERE条件的拼接格式：AND\OR\IN\NOT IN\IS NULL\IS NOT NULL\NVL\> >= < <= <> =\
-                //考虑用户前台交互形成的过滤、排序语句
+                StringBuffer sqlStr = datawindowFactorService.getSelectSqlStr(curDwfactor);
+                Map<String, Object> values = new HashMap<String, Object>();
+                String whereStr = datawindowFactorService.getWhereCondStr(curDwfactor, whereJson, values);
+                datawindowFactorService.getPagingDataList(sqlStr.toString() + whereStr, values, ps);
+                jsonString = CommonMsgOutput.getResponseJson(true, ps.getTotalRows(), ps.getItems(), "0", "select");
             }
         } catch (Exception e) {
             jsonString = CommonMsgOutput.getResponseJson(false, 0, null, e.getMessage(), "QUERY");
@@ -108,11 +108,25 @@ public class DatawindowFactorAction extends BaseAction {
 
     @Description("查询不分页数据")
     public void queryDataSet() {
-        //记日志（系统日志）
+        //记日志（操作日志）
         String jsonString = "";
         try {
-            String dwName = request.getParameter("dwName");
-            String whereJson = request.getParameter("whereJson");
+            datawindowFactorVo = getRequestVo(DatawindowFactorVo.class);
+            //初始化时whereJson = -1 ,不用查询
+            boolean ifSuccess = true;
+            String whereJson = datawindowFactorVo.getWhereJson();
+            if (whereJson.equals("-1")) {
+                jsonString = CommonMsgOutput.getResponseJson(true, 0, new JSONArray(), "0", "select");
+                ifSuccess = false;
+            }
+            if (ifSuccess) {
+                MdDatawindowFactor curDwfactor = datawindowFactorService.getCurDatawindowFactor(datawindowFactorVo.getDwName());
+                StringBuffer sqlStr = datawindowFactorService.getSelectSqlStr(curDwfactor);
+                Map<String, Object> values = new HashMap<String, Object>();
+                String whereStr = datawindowFactorService.getWhereCondStr(curDwfactor, whereJson, values);
+                List<Map<String, Object>> listMap = datawindowFactorService.getNoPagingDataList(sqlStr.toString() + whereStr, values);
+                jsonString =  CommonMsgOutput.getResponseJson(true, 0, listMap, "0", "select");
+            }
         } catch (Exception e) {
             jsonString = CommonMsgOutput.getResponseJson(false, 0, null, e.getMessage(), "QUERY");
         } finally {

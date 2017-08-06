@@ -457,7 +457,7 @@ function generateNormQueryCond(contentId) {
         var className = inputs[i].className;
         var colCond = "";
         if (className.indexOf("jqx-dropdownlist") >= 0) {
-            colCond = {"colName":colName, "colOperator":"INSTR", "colVal": itemVal, "colType":"CHAR", "colRelate":"AND"};
+            colCond = {"colName":colName, "colOperator":"IN", "colVal": itemVal, "colType":"CHAR", "colRelate":"AND"};
             rowCond.push(colCond);
         } else if (className.indexOf("jqx-input") >= 0) {
             //拼接这个条件的值

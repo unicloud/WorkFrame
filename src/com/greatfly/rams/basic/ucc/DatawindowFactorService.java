@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import net.sf.ehcache.search.Results;
+
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -14,6 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.greatfly.common.dao.impl.JdbcBaseDao;
 import com.greatfly.common.service.impl.BaseService;
 import com.greatfly.common.util.GlobalUtil;
+import com.greatfly.common.util.PageSupport;
 import com.greatfly.common.util.StringUtil;
 import com.greatfly.rams.basic.dao.MdDatawindowFactorDao;
 import com.greatfly.rams.basic.domain.MdDatawindowFactor;
@@ -270,11 +273,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
                 }
            }
         }
-        /*Map<String, Object> tMap = new HashMap<String, Object>();
-        tMap.put("TEXT", "");
-        tMap.put("VALUE", "");
-        listMaps.add(tMap);*/
-        return listMaps;        
+        return listMaps;
     }
     
     /** 
@@ -315,4 +314,234 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
             + ((dwfactor.getColumnInfo9() == null) ? "" : dwfactor.getColumnInfo9()) 
             + ((dwfactor.getColumnInfo10() == null) ? "" : dwfactor.getColumnInfo10());
     }
-}    
+
+
+    /**
+     * @Title: getdwsqlStr 获取数据窗口 sql_str - sql_str1 列的合并信息
+     * @param dwfactor 数据窗信息
+     * @return Document 数据窗配置信息中原始查询语句
+     */
+    public String getdwsqlStr(MdDatawindowFactor dwfactor) {
+        return dwfactor.getSqlStr() 
+            + ((dwfactor.getSqlStr1() == null) ? "" : dwfactor.getSqlStr1());
+    }
+
+    /**
+     * @Title: getSelectSqlStr 获取查询语句（不包含条件）
+     * @param dwfactor 数据窗信息
+     * @return StringBuffer 查询语句
+     */
+    public StringBuffer getSelectSqlStr(MdDatawindowFactor dwfactor) {
+    	StringBuffer querySqlStr = new StringBuffer(1000);
+        querySqlStr.append("SELECT ");
+        String colInfos = getdwcolumn_info1_10(dwfactor);
+        String disCols = dwfactor.getDisColumn();
+        String notNullCols = StringUtil.getSubString(dwfactor.getDwInfo(), "NOTNULL");
+        String colName = "";
+        String dbName = "";
+        String colInfo = "";
+        //获取显示列信息
+        for (int i = 1; i < 200; i++) {
+            colName = StringUtil.getSubString(disCols, String.valueOf(i)); //获取显示列的别名
+            if (colName.isEmpty()) {
+                break;
+            }
+            colInfo = StringUtil.getSubString(colInfos, colName);
+            dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+            querySqlStr.append(dbName + " \"" + colName + "\",");
+        }
+        for (int j = 1; j < 200; j++) {
+        	colName = StringUtil.getSubString(notNullCols, String.valueOf(j)); //获取非空列的别名
+            if (colName.isEmpty()) {
+                break;
+            }
+            if (disCols.indexOf(">" + colName + "<") >= 0) {
+                continue;
+            }
+            colInfo = StringUtil.getSubString(colInfos, colName);
+            dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+            querySqlStr.append(dbName + " \"" + colName + "\",");
+        }
+    	querySqlStr.deleteCharAt(querySqlStr.lastIndexOf(","));
+    	return querySqlStr;
+    }
+    
+    /**
+     * @Title: getWhereCondStr 获取查询where条件
+     * @param dwfactor 数据窗信息
+     * @param whereJson 查询条件
+     * @param values 查询参数值
+     * @return String 查询where条件
+     */
+    public String getWhereCondStr(MdDatawindowFactor dwfactor,String whereJson, Map<String, Object> values) {
+    	String whereCondStr = "";
+        String sqlStr = getdwsqlStr(dwfactor);
+        String colInfos = getdwcolumn_info1_10(dwfactor);
+        String fromStr = sqlStr.substring(sqlStr.indexOf(" FROM "));
+        //1、首先获取到FROM子句，将数据窗自带的条件做个转换
+        fromStr = replaceDefaultCondition(fromStr);
+        //2、截取数据窗自带的 GROUP BY 子句
+        String groupOrOrderStr = "";
+        if (fromStr.indexOf(" GROUP BY ") >= 0) {
+            groupOrOrderStr = fromStr.substring(fromStr.indexOf(" GROUP BY "));
+            fromStr = fromStr.substring(0, fromStr.indexOf(" GROUP BY "));
+        } else if (fromStr.indexOf(" ORDER BY ") >= 0) {
+            groupOrOrderStr = fromStr.substring(fromStr.indexOf(" ORDER BY "));
+            fromStr = fromStr.substring(0, fromStr.indexOf(" ORDER BY "));
+        }
+        if (fromStr.indexOf(" WHERE ") < 0) {
+            fromStr = fromStr + " WHERE 1=1 ";
+        }
+        //3、拼接界面默认的查询条件defaultJson
+    	JSONObject jsonObject = JSONObject.parseObject(whereJson);
+
+        String defaultJson = jsonObject.getString("defaultCond");
+        if (StringUtil.isNotBlank(defaultJson)) {
+            JSONArray defaultArray = JSONArray.parseArray(defaultJson);
+            if (!defaultArray.isEmpty()) {
+            	String defaultCond = "";
+            	for (int i = 0; i < defaultArray.size(); i++) {
+            		defaultCond += resolveQueryCond(defaultArray.getJSONObject(i), values, colInfos);
+            	}
+            	defaultCond = defaultCond.substring(defaultCond.indexOf(" "));
+            	fromStr = fromStr + " AND (" + defaultCond + ") ";
+            }
+        }
+        //4、拼接用户输入的查询条件customJson
+        String customJson = jsonObject.getString("customCond");
+        String customCond = "";
+        if (StringUtil.isNotBlank(customJson)) {
+            JSONArray customArray = JSONArray.parseArray(customJson);
+            if (!customArray.isEmpty()) {
+            	String rowCond = "";
+            	for (int i = 0; i < customArray.size(); i++) {
+            		JSONArray rowCondArry = (JSONArray) customArray.get(i);
+            		for (int j =0; j < rowCondArry.size(); j++) {
+            			rowCond += resolveQueryCond(rowCondArry.getJSONObject(j), values, colInfos);
+            		}
+            		rowCond = rowCond.substring(rowCond.indexOf(" "));
+            		if (i == 0) {
+            			customCond = " (" + rowCond + ") ";
+            		} else {
+                		customCond += " OR (" + rowCond + ") ";
+            		}
+            	}
+            	fromStr = fromStr + " AND (" + customCond + ") ";
+            }
+        }
+    	//5、拼接用户界面交互的过滤和排序语句
+        //6、拼接最终的where子句
+        whereCondStr = fromStr + groupOrOrderStr;
+    	return whereCondStr;
+    }
+
+    /**
+     * 根据查询语句和参数值查询分页数据
+     * @param querySql 数据窗口实体vo
+     * @param values 查询参数值
+     * @param ps 分页信息
+     * @throws Exception 抛出异常方法给上层调用方法
+     */
+    @SuppressWarnings({ "rawtypes" })
+    public void getPagingDataList(String querySql, Map<String, Object> values,PageSupport ps) throws Exception {
+        try {
+            jdBaseDao.queryForList(querySql, values, ps);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    /**
+     * 根据查询语句和参数值查询分页数据
+     * @param querySql 数据窗口实体vo
+     * @param values 查询参数值
+     * @return List 数据集
+     * @throws Exception 抛出异常方法给上层调用方法
+     */
+    @SuppressWarnings({ "rawtypes" })
+    public List<Map<String, Object>> getNoPagingDataList(String querySql, Map<String, Object> values) throws Exception {
+        try {
+            List<Map<String, Object>> listMap = jdBaseDao.queryForList(querySql, values);
+            return listMap;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    /**
+     * 将json查询对象转换为字符串
+     * @param condObj 查询条件
+     * @param values 记录参数值
+     * @param colInfos 列信息
+     * @return String 返回替换后的内容
+     */
+    public String resolveQueryCond(JSONObject condObj,  Map<String, Object> values, String colInfos) {
+    	String rusltStr = "";
+    	String colName = condObj.getString("colName");//别名
+    	String colOperator = condObj.getString("colOperator");//操作符
+    	String colVal = condObj.getString("colVal");//列值
+    	String colType = condObj.getString("colType");//列类型 CHAR、DATE
+    	String colRelate = condObj.getString("colRelate");//连接符
+        String colInfo = StringUtil.getSubString(colInfos, colName);
+    	String dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+    	int[] random = StringUtil.randomCommon(1, 50, 1); //获取一个随机数
+        if ("NVL".equals(colOperator)) {
+        	rusltStr = colRelate + " NVL(" + dbName + ",:" + colName + random[0] + ") = :" + colName + random[0];
+        	values.put(colName + random[0], colVal);
+        } else if ("INSTR".equals(colOperator)) {
+        	rusltStr = colRelate + " INSTR(:" + colName + random[0] + ",','||" + dbName + "||',') > 0 ";
+        	values.put(colName + random[0], colVal);
+        } else {
+            if ("IS NULL".equals(colOperator) || "IS NOT NULL".equals(colOperator)) {
+            	rusltStr = colRelate + " " + dbName + " " + colOperator;
+            } else if ("IN".equals(colOperator) || "NOT IN".equals(colOperator)) {
+            	rusltStr = colRelate + " " + dbName + " " + colOperator +  " (:" + colName + random[0] + ") ";
+            	String[] aList = colVal.split(",");
+            	List<String> lsList = new ArrayList<String>() ;
+                for (int i = 0; i < aList.length; i++) {
+                    lsList.add(aList[i]);
+                }
+	        	values.put(colName + random[0], lsList);
+            } else {
+	        	if ("DATE".equals(colType)) {
+	        		rusltStr = colRelate + " " + dbName + " " + colOperator +  " TO_DATE(:" + colName + random[0] + ",'yyyy-MM-dd') ";
+	        	} else {
+	            	rusltStr = colRelate + " " + dbName + " " + colOperator +  " :" + colName + random[0] + " ";
+	        	}
+	        	values.put(colName + random[0], colVal);
+            }
+        }
+    	return rusltStr;
+    	
+    }
+    
+    /**
+     * 处理从数据配置表中获取到的表名的后缀,比如后缀了一些条件,那么就要进行替换
+     * @param fromStr 从数据窗信息中获取到的from子句(可能含有WEHRE条件)
+     *      1.账套-ID_CODE = '#######'
+     *      2.国际国内-INSTR('*######',STAT_CODE)>0 
+     *      3.客货标志-PC_TYPE='**#####'
+     *      4.角色代码-ROLE_CODE='***####'
+     *      5.用户代码-LOGIN_CODE='****###'
+     * @return String 返回替换后的内容
+     */
+    public String replaceDefaultCondition(String fromStr) {
+        String resultStr = fromStr;
+        if (fromStr.indexOf("#######") >= 0) {
+            resultStr = resultStr.replace("#######", GlobalUtil.getUser().getIdCode());
+        } 
+        if (fromStr.indexOf("*######") >= 0) {
+            resultStr = resultStr.replace("*######", GlobalUtil.getUser().getStatCode());
+        } 
+        if (fromStr.indexOf("**#####") >= 0) {
+            resultStr = resultStr.replace("**#####", "P"); //TODO:需要改成当前客货标志
+        }
+        if (fromStr.indexOf("***####") >= 0) {
+            resultStr = resultStr.replace("***####", GlobalUtil.getUser().getPcode()); //TODO:需要改成角色
+        }
+        if (fromStr.indexOf("****###") >= 0) {
+            resultStr = resultStr.replace("****#####", GlobalUtil.getUser().getPcode());
+        }
+        return resultStr;
+    }
+}

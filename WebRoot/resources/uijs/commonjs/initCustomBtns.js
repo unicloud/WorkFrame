@@ -70,7 +70,10 @@ var initNormQueryBtn = function(containerId, gridId, gridVars, tabName) {
             layer.alert("请输入查询条件！", {icon :8});
             return;
         }
-        var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
+        var whereCond = new Object();
+        whereCond.customCond = queryCond;
+        whereCond.defaultCond = defaultQueryCond;
+        var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : JSON.stringify(whereCond)};
         $("#jqxLoader").jqxLoader('open');
         query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
     });
@@ -93,7 +96,10 @@ var initFlexQueryBtn = function(containerId, gridId, gridVars, tabName) {
             layer.alert("请输入查询条件！", {icon :8});
             return;
         }
-        var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
+        var whereCond = new Object();
+        whereCond.customCond = queryCond;
+        whereCond.defaultCond = defaultQueryCond;
+        var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : JSON.stringify(whereCond)};
         $("#jqxLoader").jqxLoader('open');
         query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
     });
@@ -123,7 +129,10 @@ var initMixQueryBtn = function(containerId, gridId, gridVars, tabName) {
             layer.alert("请输入查询条件！", {icon :8});
             return;
         }
-        var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : ""};
+        var whereCond = new Object();
+        whereCond.customCond = queryCond;
+        whereCond.defaultCond = defaultQueryCond;
+        var whereJson = {"dwName" : gridVars.resultDwName,"whereJson" : JSON.stringify(whereCond)};
         $("#jqxLoader").jqxLoader('open');
         query(gridId,$("#"+ gridId).jqxGrid('source')._source, whereJson);
     });
