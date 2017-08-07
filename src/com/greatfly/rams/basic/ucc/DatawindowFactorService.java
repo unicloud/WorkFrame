@@ -377,6 +377,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
         String sqlStr = getdwsqlStr(dwfactor);
         String colInfos = getdwcolumn_info1_10(dwfactor);
         String whereJson = datawindowFactorVo.getWhereJson();
+        String filterJson = datawindowFactorVo.getFilterJson();
         String fromStr = sqlStr.substring(sqlStr.indexOf(" FROM ")).toUpperCase();
         //1、首先获取到FROM子句，将数据窗自带的条件做个转换
         fromStr = replaceDefaultCondition(fromStr);
@@ -431,6 +432,30 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
             }
         }
     	//5、拼接用户界面交互的过滤和排序语句
+        //过滤
+    	String filterCond = "";
+        if (StringUtil.isNotBlank(filterJson)) {
+        	JSONArray filterArry = JSONArray.parseArray(filterJson);
+            if (!filterArry.isEmpty()) {
+            	String colCond = "";
+            	for (int i = 0; i < filterArry.size(); i++) {
+            		JSONArray colCondArry = (JSONArray) filterArry.get(i);
+            		for (int j =0; j < colCondArry.size(); j++) {
+            			colCond += resolveQueryCond(colCondArry.getJSONObject(j), values, colInfos);
+            		}
+            		colCond = colCond.substring(colCond.indexOf(" "));
+            		if (i == 0) {
+            			filterCond = " (" + colCond + ") ";
+            		} else {
+            			filterCond += " AND (" + colCond + ") ";
+            		}
+            		colCond = "";
+            	}
+            	fromStr = fromStr + " AND (" + filterCond + ") ";
+            }
+        }
+    	
+        //排序
         String sortField = datawindowFactorVo.getSortdatafield();
     	String sortOrder = datawindowFactorVo.getSortorder();
         if (StringUtil.isNotBlank(sortField) && StringUtil.isNotBlank(sortOrder)) {
@@ -522,7 +547,14 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
 	        	values.put(colName + random[0], lsList);
             } else {
 	        	if ("DATE".equals(colType)) {
-	        		rusltStr = colRelate + " " + dbName + " " + colOperator +  " TO_DATE(:" + colName + random[0] + ",'yyyy-MM-dd') ";
+	        		rusltStr = colRelate + " " + dbName + " " + colOperator +  " TO_DATE(:" + colName + random[0];
+	        		if (colVal.indexOf('-') > 0) {
+	        			rusltStr = rusltStr + ",'yyyy-MM-dd') ";
+	        		} else if (colVal.indexOf('/') > 0) {
+	        			rusltStr = rusltStr + ",'yyyy-MM-dd') ";
+	        		} else {
+	        			rusltStr = rusltStr + ",'yyyyMMdd') ";
+	        		}
 	        	} else {
 	            	rusltStr = colRelate + " " + dbName + " " + colOperator +  " :" + colName + random[0] + " ";
 	        	}

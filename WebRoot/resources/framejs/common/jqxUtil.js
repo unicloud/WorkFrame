@@ -13,9 +13,119 @@ var dateReg = /^((19|20)\d\d)(-|\/|)((0|)[1-9]|1[012])\3((0|)[1-9]|[12]\d|3[01])
  */
 var query = function(jqxgrid, source, params) {
     source.data = params; //给数据源添加查询条件
+    //拼接过滤条件
+    var filterJson = getFilterinformation(jqxgrid);
+    source.data.filterJson = JSON.stringify(filterJson);
     var dataAdpater = $("#" + jqxgrid).jqxGrid("source");
     $("#" + jqxgrid).jqxGrid({source: dataAdpater});
 };
+
+/**
+ * 获取grid所有的过滤条件
+ * @param jqxgrid 查询结果grid的id字符串
+ * @return 返回所有的过滤信息
+ */
+var getFilterinformation = function(jqxgrid) {
+    var filterJson = [];
+    var filterArry = $("#" + jqxgrid).jqxGrid('getfilterinformation');
+    for (var i = 0; i < filterArry.length; i++) {
+        var colCond = new Array();
+        var filterGroup = filterArry[i];
+        var filters = filterGroup.filter.getfilters();
+        for (var j = 0; j < filters.length; j++) {
+            var filterItem = {"colName":filterGroup.datafield, "colOperator": "", "colVal":"", "colType":"CHAR", "colRelate":filterArry[i].filter.operator};
+            switch (filters[j].type) { //'stringfilter', 'numericfilter', 'booleanfilter' or 'datefilter'
+                case "datefilter" :
+                    filterItem.colType = "DATE";
+                    break;
+                default :
+                    filterItem.colType = "CHAR";
+                    break;
+            }
+            switch (filters[j].condition) {
+                case "EMPTY" :
+                    filterItem.colOperator = "IS NULL";
+                    break;
+                case "NOT_EMPTY" :
+                    filterItem.colOperator = "IS NOT NULL";
+                    break;
+                case "CONTAINS" :
+                    filterItem.colOperator = "LIKE";
+                    filterItem.colVal = "%" + filters[j].value + "%";
+                    break;
+                case "CONTAINS_CASE_SENSITIVE" :
+                    filterItem.colOperator = "LIKE";
+                    filterItem.colVal = "%" + filters[j].value + "%";
+                    break;
+                case "DOES_NOT_CONTAIN" :
+                    filterItem.colOperator = "NOT LIKE";
+                    filterItem.colVal = "%" + filters[j].value + "%";
+                    break;
+                case "DOES_NOT_CONTAIN_CASE_SENSITIVE" :
+                    filterItem.colOperator = "NOT LIKE";
+                    filterItem.colVal = "%" + filters[j].value + "%";
+                    break;
+                case "STARTS_WITH" :
+                    filterItem.colOperator = "LIKE";
+                    filterItem.colVal = filters[j].value + "%";
+                    break;
+                case "STARTS_WITH_CASE_SENSITIVE" :
+                    filterItem.colOperator = "LIKE";
+                    filterItem.colVal = filters[j].value + "%";
+                    break;
+                case "ENDS_WITH" :
+                    filterItem.colOperator = "LIKE";
+                    filterItem.colVal = "%" + filters[j].value;
+                    break;
+                case "ENDS_WITH_CASE_SENSITIVE" :
+                    filterItem.colOperator = "LIKE";
+                    filterItem.colVal = "%" + filters[j].value;
+                    break;
+                case "EQUAL" :
+                    filterItem.colOperator = "=";
+                    filterItem.colVal = filters[j].value;
+                    break;
+                case "EQUAL_CASE_SENSITIVE" :
+                    filterItem.colOperator = "=";
+                    filterItem.colVal = filters[j].value;
+                    break;
+                case "NOT_EQUAL" :
+                    filterItem.colOperator = "<>";
+                    filterItem.colVal = filters[j].value;
+                    break;
+                case "LESS_THAN" :
+                    filterItem.colOperator = "<";
+                    filterItem.colVal = filters[j].value;
+                    break;
+                case "LESS_THAN_OR_EQUAL" :
+                    filterItem.colOperator = "<=";
+                    filterItem.colVal = filters[j].value;
+                    break;
+                case "GREATER_THAN" :
+                    filterItem.colOperator = ">";
+                    filterItem.colVal = filters[j].value;
+                    break;
+                case "GREATER_THAN_OR_EQUAL" :
+                    filterItem.colOperator = ">=";
+                    filterItem.colVal = filters[j].value;
+                    break;
+                case "NULL" :
+                    filterItem.colOperator = "IS NULL";
+                    break;
+                case "NOT_NULL" :
+                    filterItem.colOperator = "IS NOT NULL";
+                    break;
+                default :
+                    filterItem.colOperator = "=";
+                    filterItem.colVal = filters[j].value;
+                    break;
+            }
+            colCond.push(filterItem);
+        }
+        filterJson.push(colCond);
+    }
+    return filterJson;
+}
 
 /**
  * 刷新grid

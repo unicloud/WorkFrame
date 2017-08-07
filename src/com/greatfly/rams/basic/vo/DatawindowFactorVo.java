@@ -20,9 +20,8 @@ public class DatawindowFactorVo extends MdDatawindowFactor {
 	private int recordendindex;
 	private String sortdatafield;
 	private String sortorder;
+	private String filterJson;
 	
-	private int filterscount;
-	private int groupscount;
 	private int pagenum;
 	private int pagesize;
 
@@ -67,20 +66,12 @@ public class DatawindowFactorVo extends MdDatawindowFactor {
 	}
 
 
-	public int getFilterscount() {
-		return filterscount;
+	public String getFilterJson() {
+		return filterJson;
 	}
 
-	public void setFilterscount(int filterscount) {
-		this.filterscount = filterscount;
-	}
-
-	public int getGroupscount() {
-		return groupscount;
-	}
-
-	public void setGroupscount(int groupscount) {
-		this.groupscount = groupscount;
+	public void setFilterJson(String filterJson) {
+		this.filterJson = filterJson;
 	}
 
 	public int getPagenum() {

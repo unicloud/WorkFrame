@@ -213,6 +213,9 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             $("#" + gridId).jqxGrid('clearfilters', false);
             return;
         }
+        var source = $("#"+ gridId).jqxGrid('source')._source
+        var filterJson = getFilterinformation(gridId);
+        source.data.filterJson = JSON.stringify(filterJson);
         $("#" + gridId).jqxGrid("updatebounddata");
     });
 
@@ -377,6 +380,10 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             $("#" + gridId).jqxGrid('clearfilters', false);
             return;
         }
+        //TODO: 日期类型的数据做判断
+        var source = $("#"+ gridId).jqxGrid('source')._source
+        var filterJson = getFilterinformation(gridId);
+        source.data.filterJson = JSON.stringify(filterJson);
         $("#" + gridId).jqxGrid("updatebounddata");
     });
 
