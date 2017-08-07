@@ -7,8 +7,6 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import net.sf.ehcache.search.Results;
-
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -20,6 +18,7 @@ import com.greatfly.common.util.PageSupport;
 import com.greatfly.common.util.StringUtil;
 import com.greatfly.rams.basic.dao.MdDatawindowFactorDao;
 import com.greatfly.rams.basic.domain.MdDatawindowFactor;
+import com.greatfly.rams.basic.vo.DatawindowFactorVo;
 
 /**
  * 数据窗配置ucc
@@ -369,15 +368,16 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
     /**
      * @Title: getWhereCondStr 获取查询where条件
      * @param dwfactor 数据窗信息
-     * @param whereJson 查询条件
+     * @param datawindowFactorVo 查询信息
      * @param values 查询参数值
      * @return String 查询where条件
      */
-    public String getWhereCondStr(MdDatawindowFactor dwfactor,String whereJson, Map<String, Object> values) {
+    public String getWhereCondStr(MdDatawindowFactor dwfactor,DatawindowFactorVo datawindowFactorVo, Map<String, Object> values) {	
     	String whereCondStr = "";
         String sqlStr = getdwsqlStr(dwfactor);
         String colInfos = getdwcolumn_info1_10(dwfactor);
-        String fromStr = sqlStr.substring(sqlStr.indexOf(" FROM "));
+        String whereJson = datawindowFactorVo.getWhereJson();
+        String fromStr = sqlStr.substring(sqlStr.indexOf(" FROM ")).toUpperCase();
         //1、首先获取到FROM子句，将数据窗自带的条件做个转换
         fromStr = replaceDefaultCondition(fromStr);
         //2、截取数据窗自带的 GROUP BY 子句
@@ -425,11 +425,30 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
             		} else {
                 		customCond += " OR (" + rowCond + ") ";
             		}
+            		rowCond = "";
             	}
             	fromStr = fromStr + " AND (" + customCond + ") ";
             }
         }
     	//5、拼接用户界面交互的过滤和排序语句
+        String sortField = datawindowFactorVo.getSortdatafield();
+    	String sortOrder = datawindowFactorVo.getSortorder();
+        if (StringUtil.isNotBlank(sortField) && StringUtil.isNotBlank(sortOrder)) {
+            String colInfo = StringUtil.getSubString(colInfos, sortField);
+            if (StringUtil.isBlank(colInfo) && sortField.endsWith("TXT")) {
+            	sortField = sortField.substring(0, sortField.length() - 3);
+            	colInfo = StringUtil.getSubString(colInfos, sortField);
+            }
+            String sortFieldDbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名;
+            if (StringUtil.isNotBlank(sortFieldDbName)) {
+            	if (groupOrOrderStr.indexOf(" ORDER BY ") >= 0) {
+            		int index = groupOrOrderStr.indexOf(" ORDER BY ") + 10;
+            		groupOrOrderStr = groupOrOrderStr.substring(0, index) + sortFieldDbName + " " + sortOrder + ", " + groupOrOrderStr.substring(index);
+            	} else {
+            		groupOrOrderStr = groupOrOrderStr + " ORDER BY " + sortFieldDbName + " " + sortOrder;
+            	}
+            }
+        }
         //6、拼接最终的where子句
         whereCondStr = fromStr + groupOrOrderStr;
     	return whereCondStr;
@@ -458,7 +477,6 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
      * @return List 数据集
      * @throws Exception 抛出异常方法给上层调用方法
      */
-    @SuppressWarnings({ "rawtypes" })
     public List<Map<String, Object>> getNoPagingDataList(String querySql, Map<String, Object> values) throws Exception {
         try {
             List<Map<String, Object>> listMap = jdBaseDao.queryForList(querySql, values);
@@ -493,7 +511,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
         	values.put(colName + random[0], colVal);
         } else {
             if ("IS NULL".equals(colOperator) || "IS NOT NULL".equals(colOperator)) {
-            	rusltStr = colRelate + " " + dbName + " " + colOperator;
+            	rusltStr = colRelate + " " + dbName + " " + colOperator + " ";
             } else if ("IN".equals(colOperator) || "NOT IN".equals(colOperator)) {
             	rusltStr = colRelate + " " + dbName + " " + colOperator +  " (:" + colName + random[0] + ") ";
             	String[] aList = colVal.split(",");
@@ -534,10 +552,10 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
             resultStr = resultStr.replace("*######", GlobalUtil.getUser().getStatCode());
         } 
         if (fromStr.indexOf("**#####") >= 0) {
-            resultStr = resultStr.replace("**#####", "P"); //TODO:需要改成当前客货标志
+            resultStr = resultStr.replace("**#####", "P");
         }
         if (fromStr.indexOf("***####") >= 0) {
-            resultStr = resultStr.replace("***####", GlobalUtil.getUser().getPcode()); //TODO:需要改成角色
+            resultStr = resultStr.replace("***####", GlobalUtil.getUser().getPcode());
         }
         if (fromStr.indexOf("****###") >= 0) {
             resultStr = resultStr.replace("****#####", GlobalUtil.getUser().getPcode());

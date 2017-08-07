@@ -25,33 +25,6 @@ public class DatawindowFactorVo extends MdDatawindowFactor {
 	private int groupscount;
 	private int pagenum;
 	private int pagesize;
-	private int mainIfUpdate;
-	private int hasOperateType;
-	private String validateColumn;
-
-	public String getValidateColumn() {
-		return validateColumn;
-	}
-
-	public void setValidateColumn(String validateColumn) {
-		this.validateColumn = validateColumn;
-	}
-
-	public int getHasOperateType() {
-		return hasOperateType;
-	}
-
-	public void setHasOperateType(int hasOperateType) {
-		this.hasOperateType = hasOperateType;
-	}
-
-	public int getMainIfUpdate() {
-		return mainIfUpdate;
-	}
-
-	public void setMainIfUpdate(int mainIfUpdate) {
-		this.mainIfUpdate = mainIfUpdate;
-	}
 
 	public String getWhereJson() {
 		return whereJson;
