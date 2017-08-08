@@ -125,7 +125,7 @@ public class DatawindowFactorAction extends BaseAction {
                 Map<String, Object> values = new HashMap<String, Object>();
                 String whereStr = datawindowFactorService.getWhereCondStr(curDwfactor, datawindowFactorVo, values);
                 List<Map<String, Object>> listMap = datawindowFactorService.getNoPagingDataList(sqlStr.toString() + whereStr, values);
-                jsonString =  CommonMsgOutput.getResponseJson(true, 0, listMap, "0", "select");
+                jsonString =  CommonMsgOutput.getResponseJson(true, listMap.size(), listMap, "0", "select");
             }
         } catch (Exception e) {
             jsonString = CommonMsgOutput.getResponseJson(false, 0, null, e.getMessage(), "QUERY");

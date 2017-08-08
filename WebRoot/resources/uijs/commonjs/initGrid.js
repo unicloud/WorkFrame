@@ -84,6 +84,11 @@ var initResultGrid = function(gridId, gridVars, hasEditWindow, canSave, gridType
     if (gridVars.resulDwInfos.length == 0) {
         return;
     }
+    //先插入“序号”列
+    var rowNumCol = {"text": "序号","sortable": false,"filterable":false,"editable": false,"groupable": false,"draggable": false,
+                    "resizable": false,"datafield": "","columntype": "number","width": "60px","maxwidth": "60px",
+                    "align": "center","cellsrenderer":rowNumCellsrenderer,"aggregatesrenderer":rowNumAggregatesrenderer};
+    gridVars.resultColumns.push(rowNumCol);
     var columns = clone(gridVars.resulDwInfos.disColumns);
     for (var i= 0; i< columns.length; i++) {
         var item =  columns[i];
@@ -205,7 +210,7 @@ var initResultGrid = function(gridId, gridVars, hasEditWindow, canSave, gridType
         statusbarheight: 30,
         showaggregates: true,
         sortable : true,
-        editable: true,
+        editable: false,
         pageable: isPaging,
         virtualmode: isPaging,
         pagesizeoptions: commonpagesizeoptions,
@@ -274,8 +279,34 @@ var initResultGrid = function(gridId, gridVars, hasEditWindow, canSave, gridType
         $("#" + gridId).jqxGrid("updatebounddata", "data");
     });
 
+    //初始化弹出窗口、双击事件
     if (hasEditWindow) {
-        initEditWindow(gridId + "EditWindow", gridVars);
+        initEditWindow(gridId + "EditWindow", gridVars, canSave);
+        //添加双击事件
+        $("#" + gridId).on("rowdoubleclick", function (event) {
+            var args = event.args;
+            var selectedrowindex = args.rowindex;
+            var rowdata = $("#" + gridId).jqxGrid('getrowdata', selectedrowindex);
+
+            var windowId = gridId + "EditWindow";
+            //1、遍历所有的控件,清空控件值
+            var items = $("#" + windowId + "Content .jqx-widget");
+            for (var i = 0 ; i < items.length; i++) {
+                $("#" + items[i].id).val("");
+            };
+            //2、设置主键值、创建者、修改者、创建日期、修改日期,需要赋初始值的设置初始值。。
+            for (var i = 0 ; i < items.length; i++) {
+                var ctrlId = items[i].id;
+                var colId = ctrlId.substring(gridId.length + 17);
+                var trowdata = rowdata[colId];
+                if (typeof(rowdata[colId]) == "undefined") {
+                    trowdata = "";
+                }
+                $("#" + ctrlId).val(trowdata);
+            };
+            //3、打开新增窗口
+            $("#" + windowId).jqxWindow("open");
+        });
     }
 };
 
@@ -350,7 +381,7 @@ var initEditWindow = function(containerId, gridVars, canSave) {
     //将enter键模拟成Tab键
     $("#" + containerId + "Content .jqx-widget").keydown(function(e) {
         if (e.keyCode == 13) {
-            var inputs = $("#" + containerId + "Content .jqx-widget[disabled!='disabled'][aria-disabled!='true']:not(.jqx-input-disabled):not(.jqx-dropdownlist-state-disabled)");
+            var inputs = $("#" + containerId + "Content .jqx-widget[disabled!='disabled'][aria-disabled!='true']:not(.jqx-input-disabled):not(.jqx-dropdownlist-state-disabled):not(.jqx-button)");
             var idx = inputs.index(this);
             if (idx == inputs.length - 1) {
                 var className = inputs[0].className;
@@ -385,19 +416,21 @@ var initEditWindow = function(containerId, gridVars, canSave) {
     $("#" + containerId + "Content").append($("<div style='clear:both;'></div>"));
     $("#" + containerId + "Content").append($("<div style='margin-right: 20px;float:right; width: 60px; height: 20px;'></div>"));
     var canxbtn = createToolBarRightButton($("#" + containerId + "Content"), "取消", "delete", containerId + "_canxBtn");
-    var savebtn = createToolBarRightButton($("#" + containerId + "Content"), "保存", "disk", containerId + "_saveBtn");
     // 关闭弹出窗口
     canxbtn.click(function() {
         $("#" + containerId + "Content").jqxValidator('hide');
         $("#" + containerId).jqxWindow("close");
     });
-    // 保存弹出窗口
-    savebtn.click(function() {
-        var validateResult = $("#" + containerId + "Content").jqxValidator('validate');
-        if (!validateResult) {
-            return;
-        }
-    });
+    if (canSave) {
+        var savebtn = createToolBarRightButton($("#" + containerId + "Content"), "保存", "disk", containerId + "_saveBtn");
+        // 保存弹出窗口
+        savebtn.click(function() {
+            var validateResult = $("#" + containerId + "Content").jqxValidator('validate');
+            if (!validateResult) {
+                return;
+            }
+        });
+    }
 };
 
 /**
@@ -422,7 +455,7 @@ var initNormQueryWindow = function(containerId, gridVars) {
     //将enter键模拟成Tab键
     $("#" + containerId + " .jqx-widget").keydown(function(e) {
         if (e.keyCode == 13) {
-            var inputs = $("#" + containerId + " .jqx-widget[disabled!='disabled'][aria-disabled!='true']:not(.jqx-input-disabled):not(.jqx-dropdownlist-state-disabled)");
+            var inputs = $("#" + containerId + " .jqx-widget:not(.jqx-scrollbar)");
             var idx = inputs.index(this);
             if (idx == inputs.length - 1) {
                 var className = inputs[0].className;
@@ -486,7 +519,11 @@ var initFlexQueryGrid = function(gridId, gridVars) {
     if (gridVars.queryDwInfos.length == 0) {
         return;
     }
-
+    //先插入“序号”列
+    var rowNumCol = {"text": "序号","sortable": false,"filterable":false,"editable": false,"groupable": false,"draggable": false,
+                    "resizable": false,"datafield": "","columntype": "number","width": "60px","maxwidth": "60px",
+                    "align": "center","cellsrenderer":rowNumCellsrenderer,"aggregatesrenderer":rowNumAggregatesrenderer};
+    gridVars.queryColumns.push(rowNumCol);
     var columns = clone(gridVars.queryDwInfos.disColumns);
     //datafields需要做处理： 数值、日期类型都得处理成文本类型
     for (var i= 0; i< columns.length; i++) {

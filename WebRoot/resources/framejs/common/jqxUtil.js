@@ -5,6 +5,16 @@
 // 日期格式的正则表达式 [YYYYMMDD]或[YYYY-MM-DD]或[YYYY/MM/DD] 或 月/日 前不加0 
 var dateReg = /^((19|20)\d\d)(-|\/|)((0|)[1-9]|1[012])\3((0|)[1-9]|[12]\d|3[01])$/;
 
+// 设置resultGrid 序号列 的信息
+var rowNumCellsrenderer = function(row, column, value) {
+    return "<div style='margin:4px;'>" + (value + 1) + "</div>";
+};
+
+// 设置resultGrid 序号列 的合计栏显示 "合计:"
+var rowNumAggregatesrenderer = function(aggregates) {
+    return '<div style="position: relative; margin: 4px; overflow: hidden;">合计: </div>';
+};
+
 /**
  * grid查询
  * @param jqxgrid 查询结果grid的id字符串
