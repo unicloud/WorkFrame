@@ -48,210 +48,35 @@ var queryDwInfo = function(gridVars, type) {
 
 /**
  * @Title initPagingGrid 初始化分页结果窗
- * @param gridId grid
+ * @param gridId gridID
  * @param gridVars grid参数
+ * @param hasEditWindow 是否需要初始化编辑窗
+ * @param canSave 是否需要保存按钮
  */
 var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
-    if (gridVars.resulDwInfos.length == 0) {
-        queryDwInfo(gridVars);
-    }
-    //依然为空，则不往下执行
-    if (gridVars.resulDwInfos.length == 0) {
-        return;
-    }
-    var columns = clone(gridVars.resulDwInfos.disColumns);
-    for (var i= 0; i< columns.length; i++) {
-        var item =  columns[i];
-        //如果是非空字段
-        if (item.notnull) {
-            item.text = item.text + "*";
-            item.classname = "requirdField";
-        }
-        var filedItem = {"name" : item.datafield};
-        if (item.columntype == "numberinput") {
-            filedItem.type = "number";
-            item.aggregates = ['sum'];
-        } else if (item.columntype == "datetimeinput") {
-            filedItem.type = "date";
-            filedItem.format = item.cellsformat;
-        } else if (item.columntype == "dropdownlist") {
-            item.editable = true;
-            var txtFiledItem = {"name": item.datafield + "TXT","type" :"string",
-            "value": item.datafield, "values": {"name":"TEXT", "value":"VALUE", "source":item.comboxList}};
-            gridVars.resultDatafields.push(txtFiledItem);
-            item.displayfield = item.datafield + "TXT";
-            eval("var dropdownlisteditor" + gridId + item.datafield + "List = item.comboxList");
-            item.createeditor = function(row, value, editor) {
-                var autoHeight = true;
-                eval("var testList= " + editor[0].id + "List");
-                testList.push({"TEXT": "","VALUE": ""});
-                if (testList.length >= 6) {
-                    autoHeight = false;
-                }
-                editor.jqxDropDownList({source: testList,displayMember: "TEXT", valueMember: "VALUE",autoDropDownHeight: autoHeight});
-            };
-            filedItem.type = "string";
-        } else {
-            filedItem.type = "string";
-        }
-        gridVars.resultColumns.push(item);
-        gridVars.resultDatafields.push(filedItem);
-        if (item.columntype == "dropdownlist") {
-
-            var txtColumnItem = {};
-            txtColumnItem.displayfield = item.datafield;
-            txtColumnItem.columntype = "string";
-            txtColumnItem.hidden = true;
-            txtColumnItem.text = item.text;
-            gridVars.resultColumns.push(txtColumnItem);
-        }
-    }
-
-    // 设置结果集Grid查询的数据
-    var gridDataSource = {
-        type: "POST",
-        datatype: "json",
-        pagesize: commonpageInitSize,
-        datafields: gridVars.resultDatafields,
-        url: "basic/datawindow-factor!queryPagingDataSet.do",
-        root: 'rows',
-        cache: false,
-        data : {
-            "whereJson" : "-1",
-            "dwName" : gridVars.resultDwName
-        },
-        pager: function (pagenum, pagesize, oldpagenum) {
-
-        },
-        beforeprocessing: function (data) {
-            if (data.success === undefined) {
-                return;
-            }
-            if (data.success) {
-                gridDataSource.totalrecords = data.total;
-            }
-            else {
-                if (typeof(data.msg) != "undefined") {
-                    if (data.operationType != "invalid") {
-                            layer.alert(data.msg, {icon : 3});
-                    }
-                }
-                return;
-            }
-        },
-        addrow: function (rowid, rowdata, position, commit) {
-            commit(true);
-        },
-        deleterow: function (rowid, commit) {
-            commit(true);
-        },
-        updaterow: function (rowid, newdata, commit) {
-            commit(true);
-        }
-    };
-    
-    var gridDataAdapter = new $.jqx.dataAdapter(gridDataSource, {
-        autoBind: false,
-        downloadComplete: function (data, status, xhr) { },
-        loadComplete: function (data) {
-            $("#jqxLoader").jqxLoader('close');
-            $("#"+gridId).jqxGrid("autoresizecolumns");//调整列以适应文本
-        },
-        loadError: function (xhr, status, error) {
-            $("#jqxLoader").jqxLoader('close');
-            layer.alert("数据加载异常！",{icon:8});
-        }
-    });
-    
-    $("#" + gridId).jqxGrid({
-        theme : sysTheme,
-        width: '100%',
-        height: '100%',
-        source: gridDataAdapter,
-        localization: getLocalization(defaultCulture),
-        showstatusbar: true,
-        statusbarheight: 30,
-        showaggregates: true,           // 显示 合计的状态栏
-        sortable: true,
-        editable: true,
-        pageable: true,
-        virtualmode: true,
-        pagesizeoptions: commonpagesizeoptions,
-        columnsresize: true,
-        selectionmode: 'multiplerowsextended',     // checkbox
-        columnsreorder: true,   // 列是否可以拖动
-        editmode: 'click',
-        columns: gridVars.resultColumns,
-        enablemousewheel: true,
-        rendergridrows: function (obj) {
-            return obj.data;
-        },
-        showtoolbar: true,
-        rendertoolbar: function (toolbar) {
-        },
-        filterable: true,
-        updatefilterconditions: function (type, defaultconditions) {
-            var stringcomparisonoperators = [ 'CONTAINS', 'DOES_NOT_CONTAIN','STARTS_WITH','ENDS_WITH','EQUAL', 'NULL', 'NOT_NULL'];
-            var numericcomparisonoperators = ['EQUAL', 'NOT_EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL', 'NOT_NULL'];
-            var datecomparisonoperators = ['EQUAL', 'NOT_EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL', 'NOT_NULL'];
-            var booleancomparisonoperators = ['EQUAL', 'NOT_EQUAL'];
-            switch (type) {
-                case 'stringfilter':
-                    return stringcomparisonoperators;
-                case 'numericfilter':
-                    return numericcomparisonoperators;
-                case 'datefilter':
-                    return datecomparisonoperators;
-                case 'booleanfilter':
-                    return booleancomparisonoperators;
-            }
-        },
-    });
-
-    //去除默认的右键菜单
-    $("#" + gridId).on('contextmenu',function() {
-        return false;
-    });
-
-    //排序事件
-    $("#" + gridId).on("sort", function(event) {
-        var rows = $("#" + gridId).jqxGrid('getrows');
-        if (rows.length == 0) {
-            $("#" + gridId).jqxGrid('removesort');
-            return;
-        }
-        $("#" + gridId).jqxGrid("updatebounddata");
-    });
-
-    //过滤事件
-    $("#" + gridId).on("filter", function(event) {
-        var source = $("#"+ gridId).jqxGrid('source')._source
-        var whereJson = source.data.whereJson;
-        var customCond = "";
-        if (whereJson != undefined && whereJson != '-1') {
-            customCond = JSON.parse(whereJson).customCond;
-        }
-        //需要有用户输入的查询条件情况下才做过滤
-        if (customCond == undefined || customCond.length == 0) {
-            $("#" + gridId).jqxGrid('clearfilters', false);
-            return;
-        }
-        var filterJson = getFilterinformation(gridId);
-        source.data.filterJson = JSON.stringify(filterJson);
-        $("#" + gridId).jqxGrid("updatebounddata");
-    });
-
-    if (hasEditWindow) {
-        initEditWindow(gridId + "EditWindow", gridVars);
-    }
+    initResultGrid(gridId, gridVars, hasEditWindow, canSave, "PAGING");
 };
 
 /**
  * @Title initNoPagingGrid 初始化不分页结果窗
- * @param gridId grid
+ * @param gridId gridID
  * @param gridVars grid参数
+ * @param hasEditWindow 是否需要初始化编辑窗
+ * @param canSave 是否需要保存按钮
  */
 var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
+    initResultGrid(gridId, gridVars, hasEditWindow, canSave, "NO_PAGING");
+};
+
+/**
+ * @Title initResultGrid 初始化结果窗
+ * @param gridId gridID
+ * @param gridVars grid参数
+ * @param hasEditWindow 是否需要初始化编辑窗
+ * @param canSave 是否需要保存按钮
+ * @param gridType PAGING -- 分页，NO_PAGING --不分页
+ */
+var initResultGrid = function(gridId, gridVars, hasEditWindow, canSave, gridType) {
     if (gridVars.resulDwInfos.length == 0) {
         queryDwInfo(gridVars);
     }
@@ -306,6 +131,13 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             gridVars.resultColumns.push(txtColumnItem);
         }
     }
+    //分页与不分页的url不同,默认不分页的
+    var srcUrl = "basic/datawindow-factor!queryDataSet.do";
+    var isPaging = false;
+    if (gridType == "PAGING") {
+        srcUrl = "basic/datawindow-factor!queryPagingDataSet.do";
+        isPaging = true;
+    }
 
     // 设置结果集Grid查询的数据
     var gridDataSource = {
@@ -313,7 +145,7 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         datatype: "json",
         pagesize: commonpageInitSize,
         datafields: gridVars.resultDatafields,
-        url: "basic/datawindow-factor!queryDataSet.do",
+        url: srcUrl,
         root: 'rows',
         cache: false,
         data : {
@@ -362,25 +194,36 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             layer.alert("数据加载异常！",{icon:8});
         }
     });
-    
+
     $("#" + gridId).jqxGrid({
         theme : sysTheme,
         width: '100%',
         height: '100%',
         source: gridDataAdapter,
         localization: getLocalization(defaultCulture),
+        showstatusbar: true,
+        statusbarheight: 30,
+        showaggregates: true,
         sortable : true,
+        editable: true,
+        pageable: isPaging,
+        virtualmode: isPaging,
+        pagesizeoptions: commonpagesizeoptions,
         columnsresize: true,    // 列是否可以拉长
         columnsreorder: true,   // 列是否可以拖动   
         selectionmode : 'multiplerowsextended',
+        editmode: 'click',
+        columns : gridVars.resultColumns,
         enablemousewheel: true,
         showtoolbar: true,
-        editable: true,
+        filterable: true,
         rendertoolbar: function (toolbar) {
         },
-        filterable: true,
+        rendergridrows: function (obj) {
+            return obj.data;
+        },
         updatefilterconditions: function (type, defaultconditions) {
-            var stringcomparisonoperators = ['CONTAINS', 'DOES_NOT_CONTAIN','"STARTS_WITH"','ENDS_WITH','EQUAL'];
+            var stringcomparisonoperators = [ 'CONTAINS', 'DOES_NOT_CONTAIN','STARTS_WITH','ENDS_WITH','EQUAL', 'NULL', 'NOT_NULL'];
             var numericcomparisonoperators = ['EQUAL', 'NOT_EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL', 'NOT_NULL'];
             var datecomparisonoperators = ['EQUAL', 'NOT_EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL', 'NOT_NULL'];
             var booleancomparisonoperators = ['EQUAL', 'NOT_EQUAL'];
@@ -395,8 +238,8 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
                     return booleancomparisonoperators;
             }
         },
-        columns : gridVars.resultColumns
     });
+    
 
     //去除默认的右键菜单
     $("#" + gridId).on('contextmenu',function() {
@@ -410,7 +253,7 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
             $("#" + gridId).jqxGrid('removesort');
             return;
         }
-        $("#" + gridId).jqxGrid("updatebounddata");
+        $("#" + gridId).jqxGrid("updatebounddata", "data");
     });
 
     //过滤事件
@@ -428,7 +271,7 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         }
         var filterJson = getFilterinformation(gridId);
         source.data.filterJson = JSON.stringify(filterJson);
-        $("#" + gridId).jqxGrid("updatebounddata");
+        $("#" + gridId).jqxGrid("updatebounddata", "data");
     });
 
     if (hasEditWindow) {

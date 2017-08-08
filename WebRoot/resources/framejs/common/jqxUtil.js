@@ -492,13 +492,14 @@ function setJqxDisabled(itemId, disable) {
     var item = $("#" + itemId)[0];
     var className = item.className;
     if (className.indexOf("jqx-datetimeinput") >= 0) {
-         $("#"+item.id).jqxDateTimeInput({disabled: true});
+         $("#"+itemId).jqxDateTimeInput({disabled: true});
+         $("#input" + itemId).unbind("mousewheel");
     } else if (className.indexOf("jqx-dropdownlist") >= 0) {
-         $("#"+item.id).jqxDropDownList({disabled: true});
+         $("#"+itemId).jqxDropDownList({disabled: true});
     } else if (className.indexOf("jqx-numberinput") >= 0) {
-         $("#"+item.id).jqxNumberInput({disabled: true});
+         $("#"+itemId).jqxNumberInput({disabled: true});
     } else if (className.indexOf("jqx-input") >=0) {
-         $("#"+item.id).jqxInput({disabled: true});
+         $("#"+itemId).jqxInput({disabled: true});
     }
 };
 
