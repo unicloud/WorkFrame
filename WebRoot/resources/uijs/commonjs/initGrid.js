@@ -70,6 +70,7 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         var filedItem = {"name" : item.datafield};
         if (item.columntype == "numberinput") {
             filedItem.type = "number";
+            item.aggregates = ['sum'];
         } else if (item.columntype == "datetimeinput") {
             filedItem.type = "date";
             filedItem.format = item.cellsformat;
@@ -188,7 +189,23 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         showtoolbar: true,
         rendertoolbar: function (toolbar) {
         },
-        filterable: true
+        filterable: true,
+        updatefilterconditions: function (type, defaultconditions) {
+            var stringcomparisonoperators = [ 'CONTAINS', 'DOES_NOT_CONTAIN','STARTS_WITH','ENDS_WITH','EQUAL', 'NULL', 'NOT_NULL'];
+            var numericcomparisonoperators = ['EQUAL', 'NOT_EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL', 'NOT_NULL'];
+            var datecomparisonoperators = ['EQUAL', 'NOT_EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL', 'NOT_NULL'];
+            var booleancomparisonoperators = ['EQUAL', 'NOT_EQUAL'];
+            switch (type) {
+                case 'stringfilter':
+                    return stringcomparisonoperators;
+                case 'numericfilter':
+                    return numericcomparisonoperators;
+                case 'datefilter':
+                    return datecomparisonoperators;
+                case 'booleanfilter':
+                    return booleancomparisonoperators;
+            }
+        },
     });
 
     //去除默认的右键菜单
@@ -208,12 +225,17 @@ var initPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
 
     //过滤事件
     $("#" + gridId).on("filter", function(event) {
-        var rows = $("#" + gridId).jqxGrid('getrows');
-        if (rows.length == 0) {
+        var source = $("#"+ gridId).jqxGrid('source')._source
+        var whereJson = source.data.whereJson;
+        var customCond = "";
+        if (whereJson != undefined && whereJson != '-1') {
+            customCond = JSON.parse(whereJson).customCond;
+        }
+        //需要有用户输入的查询条件情况下才做过滤
+        if (customCond == undefined || customCond.length == 0) {
             $("#" + gridId).jqxGrid('clearfilters', false);
             return;
         }
-        var source = $("#"+ gridId).jqxGrid('source')._source
         var filterJson = getFilterinformation(gridId);
         source.data.filterJson = JSON.stringify(filterJson);
         $("#" + gridId).jqxGrid("updatebounddata");
@@ -248,6 +270,7 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         var filedItem = {"name" : item.datafield};
         if (item.columntype == "numberinput") {
             filedItem.type = "number";
+            item.aggregates = ['sum'];
         } else if (item.columntype == "datetimeinput") {
             filedItem.type = "date";
             filedItem.format = item.cellsformat;
@@ -355,6 +378,23 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
         editable: true,
         rendertoolbar: function (toolbar) {
         },
+        filterable: true,
+        updatefilterconditions: function (type, defaultconditions) {
+            var stringcomparisonoperators = ['CONTAINS', 'DOES_NOT_CONTAIN','"STARTS_WITH"','ENDS_WITH','EQUAL'];
+            var numericcomparisonoperators = ['EQUAL', 'NOT_EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL', 'NOT_NULL'];
+            var datecomparisonoperators = ['EQUAL', 'NOT_EQUAL', 'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN', 'GREATER_THAN_OR_EQUAL', 'NULL', 'NOT_NULL'];
+            var booleancomparisonoperators = ['EQUAL', 'NOT_EQUAL'];
+            switch (type) {
+                case 'stringfilter':
+                    return stringcomparisonoperators;
+                case 'numericfilter':
+                    return numericcomparisonoperators;
+                case 'datefilter':
+                    return datecomparisonoperators;
+                case 'booleanfilter':
+                    return booleancomparisonoperators;
+            }
+        },
         columns : gridVars.resultColumns
     });
 
@@ -375,13 +415,17 @@ var initNoPagingGrid = function(gridId, gridVars, hasEditWindow, canSave) {
 
     //过滤事件
     $("#" + gridId).on("filter", function(event) {
-        var rows = $("#" + gridId).jqxGrid('getrows');
-        if (rows.length == 0) {
+        var source = $("#"+ gridId).jqxGrid('source')._source
+        var whereJson = source.data.whereJson;
+        var customCond = "";
+        if (whereJson != undefined && whereJson != '-1') {
+            customCond = JSON.parse(whereJson).customCond;
+        }
+        //需要有用户输入的查询条件情况下才做过滤
+        if (customCond == undefined || customCond.length == 0) {
             $("#" + gridId).jqxGrid('clearfilters', false);
             return;
         }
-        //TODO: 日期类型的数据做判断
-        var source = $("#"+ gridId).jqxGrid('source')._source
         var filterJson = getFilterinformation(gridId);
         source.data.filterJson = JSON.stringify(filterJson);
         $("#" + gridId).jqxGrid("updatebounddata");

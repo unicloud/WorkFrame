@@ -547,14 +547,7 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
 	        	values.put(colName + random[0], lsList);
             } else {
 	        	if ("DATE".equals(colType)) {
-	        		rusltStr = colRelate + " " + dbName + " " + colOperator +  " TO_DATE(:" + colName + random[0];
-	        		if (colVal.indexOf('-') > 0) {
-	        			rusltStr = rusltStr + ",'yyyy-MM-dd') ";
-	        		} else if (colVal.indexOf('/') > 0) {
-	        			rusltStr = rusltStr + ",'yyyy-MM-dd') ";
-	        		} else {
-	        			rusltStr = rusltStr + ",'yyyyMMdd') ";
-	        		}
+	        		rusltStr = colRelate + " " + dbName + " " + colOperator +  " TO_DATE(:" + colName + random[0] + ",'yyyy-MM-dd') ";
 	        	} else {
 	            	rusltStr = colRelate + " " + dbName + " " + colOperator +  " :" + colName + random[0] + " ";
 	        	}

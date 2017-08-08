@@ -54,13 +54,12 @@
                  groupremovestring: "从分组中移除",
                  filterclearstring: "清除",
                  filterstring: "过滤",
-                 filtershowrowstring: "显示行，在:",
+                 filtershowrowstring: "过滤条件:",
                  filterorconditionstring: "或",
                  filterandconditionstring: "且",
                  filterselectallstring: "(全选)",
                  filterchoosestring: "请选择:",
-                 filterstringcomparisonoperators: ['空', '非空', '包含', '包含(match case)', '不包含', '不包含(match case)', '开始于', 
-                     '开始于(match case)', '结束于', '结束于(match case)', '等于', '等(match case)', 'null', '非null'],
+                 filterstringcomparisonoperators: ['包含', '不包含', '开始于', '结束于', '等于', 'null', '非null'],
                  filternumericcomparisonoperators: ['=', '!=', '<', '<=', '>', '>=', 'null', '非null'],
                  filterdatecomparisonoperators: ['=', '!=', '<', '<=', '>', '>=', 'null', '非null'],
                  filterbooleancomparisonoperators: ['等于', '不等于'],
@@ -70,12 +69,12 @@
                  loadtext: "加载中...",
                  clearstring: "清除",
                  todaystring: "今天",
-                // FileUpload 控件
-                browseButton: "浏览文件...",
-                uploadButton: "全部上传",
-                cancelButton: "全部取消",
-                uploadFileTooltip : "文件上传",
-                cancelFileTooltip : "取消"
+                 // FileUpload 控件
+                 browseButton: "浏览文件...",
+                 uploadButton: "全部上传",
+                 cancelButton: "全部取消",
+                 uploadFileTooltip : "文件上传",
+                 cancelFileTooltip : "取消"
              };
             break;
         case "en":

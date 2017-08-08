@@ -32,8 +32,21 @@ var getFilterinformation = function(jqxgrid) {
         var colCond = new Array();
         var filterGroup = filterArry[i];
         var filters = filterGroup.filter.getfilters();
+        //获取同一个字段过滤组的连接符
+        var relate = filterGroup.filter.getoperatorat(0);
+        switch(relate) {
+            case 0 :
+              relate = "AND";
+              break;
+            case 1 :
+              relate = "OR";
+              break;
+            default:
+              relate = "AND";
+              break;
+        }
         for (var j = 0; j < filters.length; j++) {
-            var filterItem = {"colName":filterGroup.datafield, "colOperator": "", "colVal":"", "colType":"CHAR", "colRelate":filterArry[i].filter.operator};
+            var filterItem = {"colName":filterGroup.datafield, "colOperator": "", "colVal":"", "colType":"CHAR", "colRelate":relate};
             switch (filters[j].type) { //'stringfilter', 'numericfilter', 'booleanfilter' or 'datefilter'
                 case "datefilter" :
                     filterItem.colType = "DATE";
@@ -43,17 +56,7 @@ var getFilterinformation = function(jqxgrid) {
                     break;
             }
             switch (filters[j].condition) {
-                case "EMPTY" :
-                    filterItem.colOperator = "IS NULL";
-                    break;
-                case "NOT_EMPTY" :
-                    filterItem.colOperator = "IS NOT NULL";
-                    break;
                 case "CONTAINS" :
-                    filterItem.colOperator = "LIKE";
-                    filterItem.colVal = "%" + filters[j].value + "%";
-                    break;
-                case "CONTAINS_CASE_SENSITIVE" :
                     filterItem.colOperator = "LIKE";
                     filterItem.colVal = "%" + filters[j].value + "%";
                     break;
@@ -61,15 +64,7 @@ var getFilterinformation = function(jqxgrid) {
                     filterItem.colOperator = "NOT LIKE";
                     filterItem.colVal = "%" + filters[j].value + "%";
                     break;
-                case "DOES_NOT_CONTAIN_CASE_SENSITIVE" :
-                    filterItem.colOperator = "NOT LIKE";
-                    filterItem.colVal = "%" + filters[j].value + "%";
-                    break;
                 case "STARTS_WITH" :
-                    filterItem.colOperator = "LIKE";
-                    filterItem.colVal = filters[j].value + "%";
-                    break;
-                case "STARTS_WITH_CASE_SENSITIVE" :
                     filterItem.colOperator = "LIKE";
                     filterItem.colVal = filters[j].value + "%";
                     break;
@@ -77,15 +72,7 @@ var getFilterinformation = function(jqxgrid) {
                     filterItem.colOperator = "LIKE";
                     filterItem.colVal = "%" + filters[j].value;
                     break;
-                case "ENDS_WITH_CASE_SENSITIVE" :
-                    filterItem.colOperator = "LIKE";
-                    filterItem.colVal = "%" + filters[j].value;
-                    break;
                 case "EQUAL" :
-                    filterItem.colOperator = "=";
-                    filterItem.colVal = filters[j].value;
-                    break;
-                case "EQUAL_CASE_SENSITIVE" :
                     filterItem.colOperator = "=";
                     filterItem.colVal = filters[j].value;
                     break;
