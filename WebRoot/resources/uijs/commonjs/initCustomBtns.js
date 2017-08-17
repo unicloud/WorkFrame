@@ -156,6 +156,7 @@ var initAddBtn = function(containerId, gridId, gridVars, tabName, initVal) {
         for (var i = 0 ; i < items.length; i++) {
             $("#" + items[i].id).val("");
         };
+        $("#" + windowId + "SWRowIndex").val("");
         //2、设置主键值、创建者、修改者、创建日期、修改日期,需要赋初始值的设置初始值。。
         for (var i = 0 ; i < items.length; i++) {
             var ctrlId = items[i].id;

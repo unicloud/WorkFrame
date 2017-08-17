@@ -137,10 +137,10 @@ var initResultGrid = function(gridId, gridVars, hasEditWindow, canSave, gridType
         }
     }
     //分页与不分页的url不同,默认不分页的
-    var srcUrl = "basic/datawindow-factor!queryDataSet.do";
+    var srcUrl = queryNoPaingDataUrl;
     var isPaging = false;
     if (gridType == "PAGING") {
-        srcUrl = "basic/datawindow-factor!queryPagingDataSet.do";
+        srcUrl = queryPaingDataUrl;
         isPaging = true;
     }
 
@@ -286,6 +286,8 @@ var initResultGrid = function(gridId, gridVars, hasEditWindow, canSave, gridType
         $("#" + gridId).on("rowdoubleclick", function (event) {
             var args = event.args;
             var selectedrowindex = args.rowindex;
+            var rowid = $("#" + gridId).jqxGrid('getrowid', selectedrowindex);
+            $("#" + gridId + "EditWindowSWRowIndex").val(rowid);
             var rowdata = $("#" + gridId).jqxGrid('getrowdata', selectedrowindex);
 
             var windowId = gridId + "EditWindow";
@@ -336,7 +338,7 @@ var initEditWindow = function(containerId, gridVars, canSave) {
             this.innerHTML = this.innerHTML.replace("取消","设置");
         } else {
             //首先将所有的jqx-input的值设置为大写
-            var inputs = $("#" + containerId + "Content .jqx-input:not(.jqx-input-disabled)");
+            var inputs = $("#" + containerId + "Content .jqx-input:not(.jqx-input-disabled):not(jqx-button)");
             for (var i = 0 ; i < inputs.length; i++) {
                 var value = $.trim($("#" +  inputs[i].id).val());
                 value = value.toLocaleUpperCase();
@@ -366,6 +368,9 @@ var initEditWindow = function(containerId, gridVars, canSave) {
         var item =  columns[i];
         createEditWindowCtrl(containerId + "Content", item, validator);
     }
+    //添加一个隐藏控件,用于存储rowId，新增时为空
+    var selectRowIndexStr = "<input id='" + containerId + "SWRowIndex' type='text' style='display:none' />";
+    $("#" + containerId + "Content").append(selectRowIndexStr);
     //添加控件验证
     $("#" + containerId + "Content").jqxValidator({
         rules: validator
@@ -429,6 +434,54 @@ var initEditWindow = function(containerId, gridVars, canSave) {
             if (!validateResult) {
                 return;
             }
+            var rowdata = [];
+            //拼接数据 key\value\type
+            var operationType = "UPDATE";
+            var inputs = $("#" + containerId + "Content .jqx-widget:not(.jqx-button)");
+            for (var i = 0; i < inputs.length; i++) {
+                var ctrlId = inputs[i].id;
+                var colId = ctrlId.substring(containerId.length + 7);
+                var colVal = $("#" + ctrlId).val();
+                var valType = "CHAR";
+                var className = inputs[i].className;
+                if (className.indexOf("jqx-datetimeinput") >= 0) {
+                     valType = "DATE";
+                }
+                if (colId.toLocaleUpperCase() == "PKID" && colVal == 0) {
+                    operationType = "INSERT";
+                }
+                rowdata.push({"KEY": colId, "TYPE": valType, "VAL": colVal});
+            }
+            var srcUrl = updateDatasUrl;
+            if (operationType == "INSERT") {
+                srcUrl = insertDatasUrl;
+            }
+            //保存数据的请求
+            ajaxExecute(srcUrl,{"dwName": gridVars.resultDwName,"rows" :JSON.stringify([{"rowdata" : rowdata}])},function(responseText) {
+                if (responseText.success) {
+                    var datapkid = responseText.rows;
+                    var queryCond = {"customCond":[[{"colName":"pkid","colOperator":"=","colVal":datapkid,"colType":"CHAR","colRelate":"AND"}]],"defaultCond":""};
+                    //同步获取对应数据
+                    var rowDataJSON = "";
+                    ajaxExecute(queryNoPaingDataUrl,{"dwName": gridVars.resultDwName,"whereJson" :JSON.stringify(queryCond)},function(responseText2) {
+                        rowDataJSON = responseText2.rows[0];
+                    },false);
+                    var gridId = containerId.substring(0,containerId.indexOf("EditWindow"));
+                    //将数据回写到Grid中
+                    if (responseText.operationType == "INSERT") {
+                        $("#" + gridId).jqxGrid('addrow', null, rowDataJSON,"first");
+                    } else {
+                        var rowid = $("#" + containerId + "SWRowIndex").val();
+                        rowDataJSON.uid = parseInt(rowid);
+                        $("#" + gridId).jqxGrid('updaterow', rowid, rowDataJSON);
+                    }
+                    layer.alert("保存成功!", {icon:1});
+                    $("#" + containerId).jqxWindow("close");
+                } else {
+                    //提示保存错误
+                    layer.alert("保存失败!" + responseText.msg, {icon:2});
+                }
+            },false);
         });
     }
 };
@@ -519,11 +572,6 @@ var initFlexQueryGrid = function(gridId, gridVars) {
     if (gridVars.queryDwInfos.length == 0) {
         return;
     }
-    //先插入“序号”列
-    var rowNumCol = {"text": "序号","sortable": false,"filterable":false,"editable": false,"groupable": false,"draggable": false,
-                    "resizable": false,"datafield": "","columntype": "number","width": "60px","maxwidth": "60px",
-                    "align": "center","cellsrenderer":rowNumCellsrenderer,"aggregatesrenderer":rowNumAggregatesrenderer};
-    gridVars.queryColumns.push(rowNumCol);
     var columns = clone(gridVars.queryDwInfos.disColumns);
     //datafields需要做处理： 数值、日期类型都得处理成文本类型
     for (var i= 0; i< columns.length; i++) {

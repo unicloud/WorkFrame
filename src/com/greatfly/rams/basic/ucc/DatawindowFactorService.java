@@ -16,6 +16,7 @@ import com.greatfly.common.service.impl.BaseService;
 import com.greatfly.common.util.GlobalUtil;
 import com.greatfly.common.util.PageSupport;
 import com.greatfly.common.util.StringUtil;
+import com.greatfly.common.util.msgconverter.CommonMsgOutput;
 import com.greatfly.rams.basic.dao.MdDatawindowFactorDao;
 import com.greatfly.rams.basic.domain.MdDatawindowFactor;
 import com.greatfly.rams.basic.vo.DatawindowFactorVo;
@@ -105,129 +106,133 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
         JSONObject gridInfos = new JSONObject();
         JSONArray gridcols = new JSONArray();
         JSONArray hidecols = new JSONArray();
-        //将数据窗中字段值所有都转成JSON格式数据
-        String colInfos = getdwcolumn_info1_10(dwfactor);
-        String disCols = dwfactor.getDisColumn();
-        String hideCols = dwfactor.getHideColumn();
-        String notNullCols = StringUtil.getSubString(dwfactor.getDwInfo(), "NOTNULL");
-        String indexCols = StringUtil.getSubString(dwfactor.getDwInfo(), "INDEX");
-        String prmCols = dwfactor.getPrmColumn();
-        JSONObject colObject = null;
-        //获取显示列信息
-        for (int i = 1; i < 200; i++) {
-            String colName = StringUtil.getSubString(disCols, String.valueOf(i)); //获取显示列的别名
-            if (colName.isEmpty()) {
-                break;
-            }
-            String colInfo = StringUtil.getSubString(colInfos, colName);
-            colObject = new JSONObject();
-            if (notNullCols.indexOf("<" + colName + ">") >= 0) {
-                //表示此列为非空字段
-                colObject.put("notnull", true);
-            }
-            if (indexCols.indexOf("<" + colName + ">") >= 0) {
-                //表示此列为索引列
-                colObject.put("isIndex", true);
-            }
-            String cnName = StringUtil.getSubString(colInfo, "CN"); //获取列的中文对照
-            //String dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
-            String showType = StringUtil.getSubString(colInfo, "ST").toUpperCase(); //获取列的显示类型，为TXT或CMB
-            String comboxValue = StringUtil.getSubString(colInfo, "VL"); //值,用于初始化下拉列表
-            String dataType = StringUtil.getSubString(colInfo, "DT").toUpperCase(); //数据格式：CHAR\DATE\NUM
-            String format = StringUtil.getSubString(colInfo, "FM").toUpperCase(); //显示格式,主要用于日期格式设置、数字保留位数设置
-            String dataLen = StringUtil.getSubString(colInfo, "DL"); //数据长度
-            String width = StringUtil.getSubString(colInfo, "WD"); //界面显示的列宽
-            String editable = StringUtil.getSubString(colInfo, "ED"); //是否可编辑
-            //String limit = StringUtil.getSubString(colInfo, "LT"); //数据长度限制
-            colObject.put("text", cnName);
-            colObject.put("datafield", colName);
-            if (width.isEmpty()) {
-                width = "60";
-            }
-            colObject.put("width", Integer.parseInt(width) + "px");
-            if ("NO".equals(editable)) {
-                colObject.put("editable", false);
-            } else {
-                colObject.put("editable", true);
-            }
-            if (Integer.parseInt(dataLen) > 0) { //dataLen = 0表示没限制长度，如数值、日期，主要用于做校验
-                colObject.put("dataLength", Integer.parseInt(dataLen));
-            }
-            if ("CMB".equals(showType)) {
-                //需要获取下拉列表的值
-                List<Map<String, Object>> comboxList = getDropDownListForGrid(comboxValue);
-                if (comboxList.size() == 0) {
-                    colObject.put("columntype", "textbox");
-                } else {
-                    colObject.put("columntype", "dropdownlist");
-                    colObject.put("comboxList", comboxList);
-                }
-            } else {
-                if ("NUM".equals(dataType)) {
-                    colObject.put("columntype", "numberinput");
-                    colObject.put("groupable", false);
-                    int decDigit = 0;
-                    if (format.endsWith("%")) {
-                        if (format.indexOf('.') >= 0) {
-                            decDigit = format.length() - format.indexOf('.') - 2;
-                        }
-                        colObject.put("cellsformat", "p" + decDigit);
-                    } else {
-                        if (format.indexOf('.') >= 0) {
-                            decDigit = format.length() - format.indexOf('.') - 1;
-                        }
-                        colObject.put("cellsformat", "d" + decDigit);
-                    }
-                } else if ("DATE".equals(dataType)) {
-                    colObject.put("columntype", "datetimeinput");
-                    switch (format.replace("/", "-")) {
-                        case "YYYY-MM-DD":
-                            colObject.put("cellsformat", "yyyy-MM-dd");
-                            break;
-                        case "YYYY-MM-DD HH24":
-                            colObject.put("cellsformat", "yyyy-MM-dd HH");
-                            break;
-                        case "YYYY-MM-DD HH24:MI":
-                            colObject.put("cellsformat", "yyyy-MM-dd HH:mm");
-                            break;
-                        case "YYYY-MM-DD HH24:MI:SS":
-                            colObject.put("cellsformat", "yyyy-MM-dd HH:mm:ss");
-                            break;
-                        default:
-                            colObject.put("cellsformat", "yyyy-MM-dd HH:mm:ss");
-                            break;
-                    }
-                } else {
-                    colObject.put("columntype", "textbox");
-                }
-            }
-            gridcols.add(colObject);
-        }
-        //获取隐藏列信息（只需要列中文名、别名）
-        JSONObject hidColObject = null;
-        for (int j = 1; j < 200; j++) {
-            String colName = StringUtil.getSubString(hideCols, String.valueOf(j)); //获取显示列的别名
-            if (colName.isEmpty()) {
-                break;
-            }
-            String colInfo = StringUtil.getSubString(colInfos, colName);
-            hidColObject = new JSONObject();
-            String cnName = StringUtil.getSubString(colInfo, "CN"); //获取列的中文对照
-            String width = StringUtil.getSubString(colInfo, "WD"); //界面显示的列宽
-            if (cnName.isEmpty()) {
-                cnName = colName;
-            }
-            if (width.isEmpty()) {
-                width = "60";
-            }
-            hidColObject.put("text", cnName);
-            hidColObject.put("datafield", colName);
-            hidColObject.put("width", Integer.parseInt(width) + "px");
-            hidecols.add(hidColObject);
-        }
-        gridInfos.put("disColumns", gridcols);
-        gridInfos.put("hideColumns", hidecols);
-        gridInfos.put("prmColumns", prmCols);
+    	try {
+	        //将数据窗中字段值所有都转成JSON格式数据
+	        String colInfos = getdwcolumn_info1_10(dwfactor);
+	        String disCols = dwfactor.getDisColumn();
+	        String hideCols = dwfactor.getHideColumn();
+	        String notNullCols = StringUtil.getSubString(dwfactor.getDwInfo(), "NOTNULL");
+	        String indexCols = StringUtil.getSubString(dwfactor.getDwInfo(), "INDEX");
+	        String prmCols = dwfactor.getPrmColumn();
+	        JSONObject colObject = null;
+	        //获取显示列信息
+	        for (int i = 1; i < 200; i++) {
+	            String colName = StringUtil.getSubString(disCols, String.valueOf(i)); //获取显示列的别名
+	            if (colName.isEmpty()) {
+	                break;
+	            }
+	            String colInfo = StringUtil.getSubString(colInfos, colName);
+	            colObject = new JSONObject();
+	            if (notNullCols.indexOf("<" + colName + ">") >= 0) {
+	                //表示此列为非空字段
+	                colObject.put("notnull", true);
+	            }
+	            if (indexCols.indexOf("<" + colName + ">") >= 0) {
+	                //表示此列为索引列
+	                colObject.put("isIndex", true);
+	            }
+	            String cnName = StringUtil.getSubString(colInfo, "CN"); //获取列的中文对照
+	            //String dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+	            String showType = StringUtil.getSubString(colInfo, "ST").toUpperCase(); //获取列的显示类型，为TXT或CMB
+	            String comboxValue = StringUtil.getSubString(colInfo, "VL"); //值,用于初始化下拉列表
+	            String dataType = StringUtil.getSubString(colInfo, "DT").toUpperCase(); //数据格式：CHAR\DATE\NUM
+	            String format = StringUtil.getSubString(colInfo, "FM").toUpperCase(); //显示格式,主要用于日期格式设置、数字保留位数设置
+	            String dataLen = StringUtil.getSubString(colInfo, "DL"); //数据长度
+	            String width = StringUtil.getSubString(colInfo, "WD"); //界面显示的列宽
+	            String editable = StringUtil.getSubString(colInfo, "ED"); //是否可编辑
+	            //String limit = StringUtil.getSubString(colInfo, "LT"); //数据长度限制
+	            colObject.put("text", cnName);
+	            colObject.put("datafield", colName);
+	            if (width.isEmpty()) {
+	                width = "60";
+	            }
+	            colObject.put("width", Integer.parseInt(width) + "px");
+	            if ("NO".equals(editable)) {
+	                colObject.put("editable", false);
+	            } else {
+	                colObject.put("editable", true);
+	            }
+	            if (Integer.parseInt(dataLen) > 0) { //dataLen = 0表示没限制长度，如数值、日期，主要用于做校验
+	                colObject.put("dataLength", Integer.parseInt(dataLen));
+	            }
+	            if ("CMB".equals(showType)) {
+	                //需要获取下拉列表的值
+	                List<Map<String, Object>> comboxList = getDropDownListForGrid(comboxValue);
+	                if (comboxList.size() == 0) {
+	                    colObject.put("columntype", "textbox");
+	                } else {
+	                    colObject.put("columntype", "dropdownlist");
+	                    colObject.put("comboxList", comboxList);
+	                }
+	            } else {
+	                if ("NUM".equals(dataType)) {
+	                    colObject.put("columntype", "numberinput");
+	                    colObject.put("groupable", false);
+	                    int decDigit = 0;
+	                    if (format.endsWith("%")) {
+	                        if (format.indexOf('.') >= 0) {
+	                            decDigit = format.length() - format.indexOf('.') - 2;
+	                        }
+	                        colObject.put("cellsformat", "p" + decDigit);
+	                    } else {
+	                        if (format.indexOf('.') >= 0) {
+	                            decDigit = format.length() - format.indexOf('.') - 1;
+	                        }
+	                        colObject.put("cellsformat", "d" + decDigit);
+	                    }
+	                } else if ("DATE".equals(dataType)) {
+	                    colObject.put("columntype", "datetimeinput");
+	                    switch (format.replace("/", "-")) {
+	                        case "YYYY-MM-DD":
+	                            colObject.put("cellsformat", "yyyy-MM-dd");
+	                            break;
+	                        case "YYYY-MM-DD HH24":
+	                            colObject.put("cellsformat", "yyyy-MM-dd HH");
+	                            break;
+	                        case "YYYY-MM-DD HH24:MI":
+	                            colObject.put("cellsformat", "yyyy-MM-dd HH:mm");
+	                            break;
+	                        case "YYYY-MM-DD HH24:MI:SS":
+	                            colObject.put("cellsformat", "yyyy-MM-dd HH:mm:ss");
+	                            break;
+	                        default:
+	                            colObject.put("cellsformat", "yyyy-MM-dd HH:mm:ss");
+	                            break;
+	                    }
+	                } else {
+	                    colObject.put("columntype", "textbox");
+	                }
+	            }
+	            gridcols.add(colObject);
+	        }
+	        //获取隐藏列信息（只需要列中文名、别名）
+	        JSONObject hidColObject = null;
+	        for (int j = 1; j < 200; j++) {
+	            String colName = StringUtil.getSubString(hideCols, String.valueOf(j)); //获取显示列的别名
+	            if (colName.isEmpty()) {
+	                break;
+	            }
+	            String colInfo = StringUtil.getSubString(colInfos, colName);
+	            hidColObject = new JSONObject();
+	            String cnName = StringUtil.getSubString(colInfo, "CN"); //获取列的中文对照
+	            String width = StringUtil.getSubString(colInfo, "WD"); //界面显示的列宽
+	            if (cnName.isEmpty()) {
+	                cnName = colName;
+	            }
+	            if (width.isEmpty()) {
+	                width = "60";
+	            }
+	            hidColObject.put("text", cnName);
+	            hidColObject.put("datafield", colName);
+	            hidColObject.put("width", Integer.parseInt(width) + "px");
+	            hidecols.add(hidColObject);
+	        }
+	        gridInfos.put("disColumns", gridcols);
+	        gridInfos.put("hideColumns", hidecols);
+	        gridInfos.put("prmColumns", prmCols);
+    	} catch (Exception e) {
+    		throw e;
+    	}
         return gridInfos;
     }
     
@@ -237,41 +242,45 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
      * @return 下拉列表
      */
     public List<Map<String, Object>> getDropDownListForGrid(String comboxVl) {
-        String vlXMLSub = comboxVl.substring(0, 4);
         List<Map<String, Object>> listMaps = new ArrayList<Map<String, Object>>();
-        if ("####".equals(vlXMLSub) || "****".equals(vlXMLSub)) {
-            String tvalue = comboxVl.substring(4).trim();
-            if (tvalue.endsWith("/")) {
-                tvalue = tvalue.substring(0, tvalue.length() - 1);
-            }
-            if ("####".equals(vlXMLSub)) {
-                listMaps = getDropDownList("_" + tvalue);
-            } else {
-                listMaps = jdBaseDao.queryForList(tvalue); 
-            }
-        } else {
-            //    管理员  DBA/普通用户  COMMON/查询用户  QUERY/
-            String[] vlArray = comboxVl.split("/");
-            int vlCount = vlArray.length;
-            Map<String, Object> tMap = null;
-            for (int i = 0; i < vlCount; i++) {
-                if (StringUtil.isNotBlank(vlArray[i])) {
-                    String ts = vlArray[i].replace("\t", " ");
-                    if (ts.length() > 0) {
-                        int k = ts.indexOf(' ');
-                        tMap =  new HashMap<String, Object>();
-                        if (k >= 0) {
-                            tMap.put("TEXT", ts.substring(0, k).trim());
-                            tMap.put("VALUE", ts.substring(k + 1).trim());
-                        } else {
-                            tMap.put("TEXT", ts.trim());
-                            tMap.put("VALUE", ts.trim());
-                        }
-                        listMaps.add(tMap); 
-                    }
-                }
-           }
-        }
+        try {
+	        String vlXMLSub = comboxVl.substring(0, 4);
+	        if ("####".equals(vlXMLSub) || "****".equals(vlXMLSub)) {
+	            String tvalue = comboxVl.substring(4).trim();
+	            if (tvalue.endsWith("/")) {
+	                tvalue = tvalue.substring(0, tvalue.length() - 1);
+	            }
+	            if ("####".equals(vlXMLSub)) {
+	                listMaps = getDropDownList("_" + tvalue);
+	            } else {
+	                listMaps = jdBaseDao.queryForList(tvalue); 
+	            }
+	        } else {
+	            //    管理员  DBA/普通用户  COMMON/查询用户  QUERY/
+	            String[] vlArray = comboxVl.split("/");
+	            int vlCount = vlArray.length;
+	            Map<String, Object> tMap = null;
+	            for (int i = 0; i < vlCount; i++) {
+	                if (StringUtil.isNotBlank(vlArray[i])) {
+	                    String ts = vlArray[i].replace("\t", " ");
+	                    if (ts.length() > 0) {
+	                        int k = ts.indexOf(' ');
+	                        tMap =  new HashMap<String, Object>();
+	                        if (k >= 0) {
+	                            tMap.put("TEXT", ts.substring(0, k).trim());
+	                            tMap.put("VALUE", ts.substring(k + 1).trim());
+	                        } else {
+	                            tMap.put("TEXT", ts.trim());
+	                            tMap.put("VALUE", ts.trim());
+	                        }
+	                        listMaps.add(tMap); 
+	                    }
+	                }
+	           }
+	        }
+	    } catch (Exception e) {
+	    	throw e;
+	    }
         return listMaps;
     }
     
@@ -283,17 +292,23 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
     public List<Map<String, Object>> getDropDownList(String cmbType) {
         String tcmbType = cmbType;
         String sql = "";
+        List<Map<String, Object>> listMaps = new ArrayList<Map<String, Object>>();
         Map<String, String> values = new HashMap<String, String>();
-        if (tcmbType.startsWith("_")) {
-            tcmbType = tcmbType.substring(1);
-            values.put("markCode", tcmbType);
-            sql = "SELECT B_CODE VALUE,CODE_NAME TEXT FROM MD_CODE_LIST where mark_code = :markCode order by CURRLOCATION";
-        } else if ("issue".equals(tcmbType)) {
-            sql = "select B.CODE_NAME TEXT,B.B_CODE VALUE from md_code_list  b where b.mark_code='ISS_FLAG' AND B.B_CODE<>'N' order by CURRLOCATION ";
-        } else if ("ticketCode".equals(tcmbType)) {
-            sql = "select t.tic_code ticCode,t.tic_length ticLength ,t.b_tno tno, t.tic_name ticName from MD_TICKET_CODE  t";
-        }
-        return jdBaseDao.queryForList(sql, values);
+        try {
+	        if (tcmbType.startsWith("_")) {
+	            tcmbType = tcmbType.substring(1);
+	            values.put("markCode", tcmbType);
+	            sql = "SELECT B_CODE VALUE,CODE_NAME TEXT FROM MD_CODE_LIST where mark_code = :markCode order by CURRLOCATION";
+	        } else if ("issue".equals(tcmbType)) {
+	            sql = "select B.CODE_NAME TEXT,B.B_CODE VALUE from md_code_list  b where b.mark_code='ISS_FLAG' AND B.B_CODE<>'N' order by CURRLOCATION ";
+	        } else if ("ticketCode".equals(tcmbType)) {
+	            sql = "select t.tic_code ticCode,t.tic_length ticLength ,t.b_tno tno, t.tic_name ticName from MD_TICKET_CODE  t";
+	        }
+	        listMaps = jdBaseDao.queryForList(sql, values);
+	    } catch (Exception e) {
+	    	throw e;
+	    }
+        return listMaps;
     }
 
     /**
@@ -332,36 +347,40 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
      */
     public StringBuffer getSelectSqlStr(MdDatawindowFactor dwfactor) {
     	StringBuffer querySqlStr = new StringBuffer(1000);
-        querySqlStr.append("SELECT ");
-        String colInfos = getdwcolumn_info1_10(dwfactor);
-        String disCols = dwfactor.getDisColumn();
-        String notNullCols = StringUtil.getSubString(dwfactor.getDwInfo(), "NOTNULL");
-        String colName = "";
-        String dbName = "";
-        String colInfo = "";
-        //获取显示列信息
-        for (int i = 1; i < 200; i++) {
-            colName = StringUtil.getSubString(disCols, String.valueOf(i)); //获取显示列的别名
-            if (colName.isEmpty()) {
-                break;
-            }
-            colInfo = StringUtil.getSubString(colInfos, colName);
-            dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
-            querySqlStr.append(dbName + " \"" + colName + "\",");
-        }
-        for (int j = 1; j < 200; j++) {
-        	colName = StringUtil.getSubString(notNullCols, String.valueOf(j)); //获取非空列的别名
-            if (colName.isEmpty()) {
-                break;
-            }
-            if (disCols.indexOf(">" + colName + "<") >= 0) {
-                continue;
-            }
-            colInfo = StringUtil.getSubString(colInfos, colName);
-            dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
-            querySqlStr.append(dbName + " \"" + colName + "\",");
-        }
-    	querySqlStr.deleteCharAt(querySqlStr.lastIndexOf(","));
+    	try {
+	        querySqlStr.append("SELECT ");
+	        String colInfos = getdwcolumn_info1_10(dwfactor);
+	        String disCols = dwfactor.getDisColumn();
+	        String notNullCols = StringUtil.getSubString(dwfactor.getDwInfo(), "NOTNULL");
+	        String colName = "";
+	        String dbName = "";
+	        String colInfo = "";
+	        //获取显示列信息
+	        for (int i = 1; i < 200; i++) {
+	            colName = StringUtil.getSubString(disCols, String.valueOf(i)); //获取显示列的别名
+	            if (colName.isEmpty()) {
+	                break;
+	            }
+	            colInfo = StringUtil.getSubString(colInfos, colName);
+	            dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+	            querySqlStr.append(dbName + " \"" + colName + "\",");
+	        }
+	        for (int j = 1; j < 200; j++) {
+	        	colName = StringUtil.getSubString(notNullCols, String.valueOf(j)); //获取非空列的别名
+	            if (colName.isEmpty()) {
+	                break;
+	            }
+	            if (disCols.indexOf(">" + colName + "<") >= 0) {
+	                continue;
+	            }
+	            colInfo = StringUtil.getSubString(colInfos, colName);
+	            dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+	            querySqlStr.append(dbName + " \"" + colName + "\",");
+	        }
+	    	querySqlStr.deleteCharAt(querySqlStr.lastIndexOf(","));
+    	} catch (Exception e) {
+    		throw e;
+    	}
     	return querySqlStr;
     }
     
@@ -374,108 +393,112 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
      */
     public String getWhereCondStr(MdDatawindowFactor dwfactor,DatawindowFactorVo datawindowFactorVo, Map<String, Object> values) {	
     	String whereCondStr = "";
-        String sqlStr = getdwsqlStr(dwfactor);
-        String colInfos = getdwcolumn_info1_10(dwfactor);
-        String whereJson = datawindowFactorVo.getWhereJson();
-        String filterJson = datawindowFactorVo.getFilterJson();
-        String fromStr = sqlStr.substring(sqlStr.indexOf(" FROM ")).toUpperCase();
-        //1、首先获取到FROM子句，将数据窗自带的条件做个转换
-        fromStr = replaceDefaultCondition(fromStr);
-        //2、截取数据窗自带的 GROUP BY 子句
-        String groupOrOrderStr = "";
-        if (fromStr.indexOf(" GROUP BY ") >= 0) {
-            groupOrOrderStr = fromStr.substring(fromStr.indexOf(" GROUP BY "));
-            fromStr = fromStr.substring(0, fromStr.indexOf(" GROUP BY "));
-        } else if (fromStr.indexOf(" ORDER BY ") >= 0) {
-            groupOrOrderStr = fromStr.substring(fromStr.indexOf(" ORDER BY "));
-            fromStr = fromStr.substring(0, fromStr.indexOf(" ORDER BY "));
-        }
-        if (fromStr.indexOf(" WHERE ") < 0) {
-            fromStr = fromStr + " WHERE 1=1 ";
-        }
-        //3、拼接界面默认的查询条件defaultJson
-    	JSONObject jsonObject = JSONObject.parseObject(whereJson);
-
-        String defaultJson = jsonObject.getString("defaultCond");
-        if (StringUtil.isNotBlank(defaultJson)) {
-            JSONArray defaultArray = JSONArray.parseArray(defaultJson);
-            if (!defaultArray.isEmpty()) {
-            	String defaultCond = "";
-            	for (int i = 0; i < defaultArray.size(); i++) {
-            		defaultCond += resolveQueryCond(defaultArray.getJSONObject(i), values, colInfos);
-            	}
-            	defaultCond = defaultCond.substring(defaultCond.indexOf(" "));
-            	fromStr = fromStr + " AND (" + defaultCond + ") ";
-            }
-        }
-        //4、拼接用户输入的查询条件customJson
-        String customJson = jsonObject.getString("customCond");
-        String customCond = "";
-        if (StringUtil.isNotBlank(customJson)) {
-            JSONArray customArray = JSONArray.parseArray(customJson);
-            if (!customArray.isEmpty()) {
-            	String rowCond = "";
-            	for (int i = 0; i < customArray.size(); i++) {
-            		JSONArray rowCondArry = (JSONArray) customArray.get(i);
-            		for (int j =0; j < rowCondArry.size(); j++) {
-            			rowCond += resolveQueryCond(rowCondArry.getJSONObject(j), values, colInfos);
-            		}
-            		rowCond = rowCond.substring(rowCond.indexOf(" "));
-            		if (i == 0) {
-            			customCond = " (" + rowCond + ") ";
-            		} else {
-                		customCond += " OR (" + rowCond + ") ";
-            		}
-            		rowCond = "";
-            	}
-            	fromStr = fromStr + " AND (" + customCond + ") ";
-            }
-        }
-    	//5、拼接用户界面交互的过滤和排序语句
-        //过滤
-    	String filterCond = "";
-        if (StringUtil.isNotBlank(filterJson)) {
-        	JSONArray filterArry = JSONArray.parseArray(filterJson);
-            if (!filterArry.isEmpty()) {
-            	String colCond = "";
-            	for (int i = 0; i < filterArry.size(); i++) {
-            		JSONArray colCondArry = (JSONArray) filterArry.get(i);
-            		for (int j =0; j < colCondArry.size(); j++) {
-            			colCond += resolveQueryCond(colCondArry.getJSONObject(j), values, colInfos);
-            		}
-            		colCond = colCond.substring(colCond.indexOf(" "));
-            		if (i == 0) {
-            			filterCond = " (" + colCond + ") ";
-            		} else {
-            			filterCond += " AND (" + colCond + ") ";
-            		}
-            		colCond = "";
-            	}
-            	fromStr = fromStr + " AND (" + filterCond + ") ";
-            }
-        }
-    	
-        //排序
-        String sortField = datawindowFactorVo.getSortdatafield();
-    	String sortOrder = datawindowFactorVo.getSortorder();
-        if (StringUtil.isNotBlank(sortField) && StringUtil.isNotBlank(sortOrder)) {
-            String colInfo = StringUtil.getSubString(colInfos, sortField);
-            if (StringUtil.isBlank(colInfo) && sortField.endsWith("TXT")) {
-            	sortField = sortField.substring(0, sortField.length() - 3);
-            	colInfo = StringUtil.getSubString(colInfos, sortField);
-            }
-            String sortFieldDbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名;
-            if (StringUtil.isNotBlank(sortFieldDbName)) {
-            	if (groupOrOrderStr.indexOf(" ORDER BY ") >= 0) {
-            		int index = groupOrOrderStr.indexOf(" ORDER BY ") + 10;
-            		groupOrOrderStr = groupOrOrderStr.substring(0, index) + sortFieldDbName + " " + sortOrder + ", " + groupOrOrderStr.substring(index);
-            	} else {
-            		groupOrOrderStr = groupOrOrderStr + " ORDER BY " + sortFieldDbName + " " + sortOrder;
-            	}
-            }
-        }
-        //6、拼接最终的where子句
-        whereCondStr = fromStr + groupOrOrderStr;
+    	try {
+	        String sqlStr = getdwsqlStr(dwfactor);
+	        String colInfos = getdwcolumn_info1_10(dwfactor);
+	        String whereJson = datawindowFactorVo.getWhereJson();
+	        String filterJson = datawindowFactorVo.getFilterJson();
+	        String fromStr = sqlStr.substring(sqlStr.indexOf(" FROM ")).toUpperCase();
+	        //1、首先获取到FROM子句，将数据窗自带的条件做个转换
+	        fromStr = replaceDefaultCondition(fromStr);
+	        //2、截取数据窗自带的 GROUP BY 子句
+	        String groupOrOrderStr = "";
+	        if (fromStr.indexOf(" GROUP BY ") >= 0) {
+	            groupOrOrderStr = fromStr.substring(fromStr.indexOf(" GROUP BY "));
+	            fromStr = fromStr.substring(0, fromStr.indexOf(" GROUP BY "));
+	        } else if (fromStr.indexOf(" ORDER BY ") >= 0) {
+	            groupOrOrderStr = fromStr.substring(fromStr.indexOf(" ORDER BY "));
+	            fromStr = fromStr.substring(0, fromStr.indexOf(" ORDER BY "));
+	        }
+	        if (fromStr.indexOf(" WHERE ") < 0) {
+	            fromStr = fromStr + " WHERE 1=1 ";
+	        }
+	        //3、拼接界面默认的查询条件defaultJson
+	    	JSONObject jsonObject = JSONObject.parseObject(whereJson);
+	
+	        String defaultJson = jsonObject.getString("defaultCond");
+	        if (StringUtil.isNotBlank(defaultJson)) {
+	            JSONArray defaultArray = JSONArray.parseArray(defaultJson);
+	            if (!defaultArray.isEmpty()) {
+	            	String defaultCond = "";
+	            	for (int i = 0; i < defaultArray.size(); i++) {
+	            		defaultCond += resolveQueryCond(defaultArray.getJSONObject(i), values, colInfos);
+	            	}
+	            	defaultCond = defaultCond.substring(defaultCond.indexOf(" "));
+	            	fromStr = fromStr + " AND (" + defaultCond + ") ";
+	            }
+	        }
+	        //4、拼接用户输入的查询条件customJson
+	        String customJson = jsonObject.getString("customCond");
+	        String customCond = "";
+	        if (StringUtil.isNotBlank(customJson)) {
+	            JSONArray customArray = JSONArray.parseArray(customJson);
+	            if (!customArray.isEmpty()) {
+	            	String rowCond = "";
+	            	for (int i = 0; i < customArray.size(); i++) {
+	            		JSONArray rowCondArry = (JSONArray) customArray.get(i);
+	            		for (int j =0; j < rowCondArry.size(); j++) {
+	            			rowCond += resolveQueryCond(rowCondArry.getJSONObject(j), values, colInfos);
+	            		}
+	            		rowCond = rowCond.substring(rowCond.indexOf(" "));
+	            		if (i == 0) {
+	            			customCond = " (" + rowCond + ") ";
+	            		} else {
+	                		customCond += " OR (" + rowCond + ") ";
+	            		}
+	            		rowCond = "";
+	            	}
+	            	fromStr = fromStr + " AND (" + customCond + ") ";
+	            }
+	        }
+	    	//5、拼接用户界面交互的过滤和排序语句
+	        //过滤
+	    	String filterCond = "";
+	        if (StringUtil.isNotBlank(filterJson)) {
+	        	JSONArray filterArry = JSONArray.parseArray(filterJson);
+	            if (!filterArry.isEmpty()) {
+	            	String colCond = "";
+	            	for (int i = 0; i < filterArry.size(); i++) {
+	            		JSONArray colCondArry = (JSONArray) filterArry.get(i);
+	            		for (int j =0; j < colCondArry.size(); j++) {
+	            			colCond += resolveQueryCond(colCondArry.getJSONObject(j), values, colInfos);
+	            		}
+	            		colCond = colCond.substring(colCond.indexOf(" "));
+	            		if (i == 0) {
+	            			filterCond = " (" + colCond + ") ";
+	            		} else {
+	            			filterCond += " AND (" + colCond + ") ";
+	            		}
+	            		colCond = "";
+	            	}
+	            	fromStr = fromStr + " AND (" + filterCond + ") ";
+	            }
+	        }
+	    	
+	        //排序
+	        String sortField = datawindowFactorVo.getSortdatafield();
+	    	String sortOrder = datawindowFactorVo.getSortorder();
+	        if (StringUtil.isNotBlank(sortField) && StringUtil.isNotBlank(sortOrder)) {
+	            String colInfo = StringUtil.getSubString(colInfos, sortField);
+	            if (StringUtil.isBlank(colInfo) && sortField.endsWith("TXT")) {
+	            	sortField = sortField.substring(0, sortField.length() - 3);
+	            	colInfo = StringUtil.getSubString(colInfos, sortField);
+	            }
+	            String sortFieldDbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名;
+	            if (StringUtil.isNotBlank(sortFieldDbName)) {
+	            	if (groupOrOrderStr.indexOf(" ORDER BY ") >= 0) {
+	            		int index = groupOrOrderStr.indexOf(" ORDER BY ") + 10;
+	            		groupOrOrderStr = groupOrOrderStr.substring(0, index) + sortFieldDbName + " " + sortOrder + ", " + groupOrOrderStr.substring(index);
+	            	} else {
+	            		groupOrOrderStr = groupOrOrderStr + " ORDER BY " + sortFieldDbName + " " + sortOrder;
+	            	}
+	            }
+	        }
+	        //6、拼接最终的where子句
+	        whereCondStr = fromStr + groupOrOrderStr;
+    	} catch (Exception e) {
+    		throw e;
+    	}
     	return whereCondStr;
     }
 
@@ -520,40 +543,44 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
      */
     public String resolveQueryCond(JSONObject condObj,  Map<String, Object> values, String colInfos) {
     	String rusltStr = "";
-    	String colName = condObj.getString("colName");//别名
-    	String colOperator = condObj.getString("colOperator");//操作符
-    	String colVal = condObj.getString("colVal");//列值
-    	String colType = condObj.getString("colType");//列类型 CHAR、DATE
-    	String colRelate = condObj.getString("colRelate");//连接符
-        String colInfo = StringUtil.getSubString(colInfos, colName);
-    	String dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
-    	int[] random = StringUtil.randomCommon(1, 50, 1); //获取一个随机数
-        if ("NVL".equals(colOperator)) {
-        	rusltStr = colRelate + " NVL(" + dbName + ",:" + colName + random[0] + ") = :" + colName + random[0];
-        	values.put(colName + random[0], colVal);
-        } else if ("INSTR".equals(colOperator)) {
-        	rusltStr = colRelate + " INSTR(:" + colName + random[0] + ",','||" + dbName + "||',') > 0 ";
-        	values.put(colName + random[0], colVal);
-        } else {
-            if ("IS NULL".equals(colOperator) || "IS NOT NULL".equals(colOperator)) {
-            	rusltStr = colRelate + " " + dbName + " " + colOperator + " ";
-            } else if ("IN".equals(colOperator) || "NOT IN".equals(colOperator)) {
-            	rusltStr = colRelate + " " + dbName + " " + colOperator +  " (:" + colName + random[0] + ") ";
-            	String[] aList = colVal.split(",");
-            	List<String> lsList = new ArrayList<String>() ;
-                for (int i = 0; i < aList.length; i++) {
-                    lsList.add(aList[i]);
-                }
-	        	values.put(colName + random[0], lsList);
-            } else {
-	        	if ("DATE".equals(colType)) {
-	        		rusltStr = colRelate + " " + dbName + " " + colOperator +  " TO_DATE(:" + colName + random[0] + ",'yyyy-MM-dd') ";
-	        	} else {
-	            	rusltStr = colRelate + " " + dbName + " " + colOperator +  " :" + colName + random[0] + " ";
-	        	}
+    	try {
+	    	String colName = condObj.getString("colName");//别名
+	    	String colOperator = condObj.getString("colOperator");//操作符
+	    	String colVal = condObj.getString("colVal");//列值
+	    	String colType = condObj.getString("colType");//列类型 CHAR、DATE
+	    	String colRelate = condObj.getString("colRelate");//连接符
+	        String colInfo = StringUtil.getSubString(colInfos, colName);
+	    	String dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+	    	int[] random = StringUtil.randomCommon(1, 50, 1); //获取一个随机数
+	        if ("NVL".equals(colOperator)) {
+	        	rusltStr = colRelate + " NVL(" + dbName + ",:" + colName + random[0] + ") = :" + colName + random[0];
 	        	values.put(colName + random[0], colVal);
-            }
-        }
+	        } else if ("INSTR".equals(colOperator)) {
+	        	rusltStr = colRelate + " INSTR(:" + colName + random[0] + ",','||" + dbName + "||',') > 0 ";
+	        	values.put(colName + random[0], colVal);
+	        } else {
+	            if ("IS NULL".equals(colOperator) || "IS NOT NULL".equals(colOperator)) {
+	            	rusltStr = colRelate + " " + dbName + " " + colOperator + " ";
+	            } else if ("IN".equals(colOperator) || "NOT IN".equals(colOperator)) {
+	            	rusltStr = colRelate + " " + dbName + " " + colOperator +  " (:" + colName + random[0] + ") ";
+	            	String[] aList = colVal.split(",");
+	            	List<String> lsList = new ArrayList<String>() ;
+	                for (int i = 0; i < aList.length; i++) {
+	                    lsList.add(aList[i]);
+	                }
+		        	values.put(colName + random[0], lsList);
+	            } else {
+		        	if ("DATE".equals(colType)) {
+		        		rusltStr = colRelate + " " + dbName + " " + colOperator +  " TO_DATE(:" + colName + random[0] + ",'yyyy-MM-dd') ";
+		        	} else {
+		            	rusltStr = colRelate + " " + dbName + " " + colOperator +  " :" + colName + random[0] + " ";
+		        	}
+		        	values.put(colName + random[0], colVal);
+	            }
+	        }
+		} catch (Exception e) {
+			throw e;
+		}
     	return rusltStr;
     	
     }
@@ -586,5 +613,172 @@ public class DatawindowFactorService  extends BaseService<MdDatawindowFactor, Lo
             resultStr = resultStr.replace("****#####", GlobalUtil.getUser().getPcode());
         }
         return resultStr;
+    }
+
+    /**
+     * @Title: updateDataSet 更新数据集(同一个事务中)
+     * @param rowsArray 需要更新的数据集
+     * @param dwfactor 数据窗信息
+     * @return 更新结果
+     */
+    public String updateDataSet(JSONArray rowsArray, MdDatawindowFactor dwfactor) {
+    	String updateSql = "";
+    	String updateTab = "";
+    	String updateStr = "";
+    	String whereStr = "";
+    	String pkidStr = "";
+        Map<String, Object> values = new HashMap<String, Object>();
+    	try {
+    		//首选拼接更新语句
+    		updateTab = dwfactor.getUpdTable();
+	        String colInfos = getdwcolumn_info1_10(dwfactor);
+	        String updCols = dwfactor.getUpdColumn(); //获取可更新列
+	        String prmCols = dwfactor.getPrmColumn(); //主键列
+	        String colInfo = "";
+	        String dbName = "";
+	        String colName = "";
+	        String colType = "";
+	        String colVal = "";
+	        for (int i = 1; i < 10; i++) {
+	        	String prmCol = StringUtil.getSubString(prmCols, String.valueOf(i)); //获取非空列的别名
+	            if (prmCol.isEmpty()) {
+	                break;
+	            }
+	            colInfo = StringUtil.getSubString(colInfos, prmCol);
+	            dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+	            whereStr += " AND " + dbName + "=:" + prmCol;
+	        }
+    		for (int i = 0; i < rowsArray.size(); i++) {
+    			updateStr = "";
+    			JSONObject rowData = rowsArray.getJSONObject(i);
+    			JSONArray colsArray = rowData.getJSONArray("rowdata");
+    			values = new HashMap<String, Object>();
+    			for (int j = 0; j < colsArray.size(); j++) {
+    				JSONObject colData = colsArray.getJSONObject(j);
+    				colName = colData.getString("KEY"); //别名
+    				colType = colData.getString("TYPE"); //类型，主要区分出日期
+    				colVal = colData.getString("VAL");  //值
+    				//不是可更新列，则跳过
+    				if (updCols.indexOf(">" + colName + "</") < 0) {
+    					continue;
+    				}
+    				if (prmCols.indexOf(">" + colName + "</") > 0) {
+    					if ("pkid".equals(colName)) {
+    						pkidStr = colVal;
+    					}
+    					values.put(colName, colVal);
+    					continue;
+    				}
+    				if ("createUser".equals(colName) || "createTime".equals(colName)) {
+    					continue;
+    				} else if ("modifyUser".equals(colName)) {
+    					updateStr += ", MODIFY_USER=:modifyUser";
+    					values.put(colName, GlobalUtil.getUser().getPcode());
+    				} else if ("modifyTime".equals(colName)) {
+    					updateStr += ",MODIFY_TIME=sysdate";
+    				} else {
+        				colInfo = StringUtil.getSubString(colInfos, colName);
+        		    	dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+        		    	if ("DATE".equals(colType)) {
+        		    		updateStr += ", " + dbName + "=to_date(:" + colName + ",'yyyy-MM-dd hh24:mi:ss')";
+        		    	} else {
+        		    		updateStr += ", " + dbName + "=:" + colName;
+        		    	}
+        		    	values.put(colName, colVal);
+    				}
+    			}
+    			if (updateStr.length() > 0) {
+    				updateStr = updateStr.substring(1); //去掉第一个逗号
+    				updateSql = "UPDATE " + updateTab + " SET " + updateStr + " WHERE 1=1 " + whereStr;
+    				jdBaseDao.update(updateSql, values);
+    			}
+    		}
+    	} catch (Exception e) {
+    		throw e;
+    	}
+        return CommonMsgOutput.getResponseJson(true, 0, pkidStr, "OK", "UPDATE");
+    }
+
+    /**
+     * @Title: insertDataSet 插入数据集(同一个事务中)
+     * @param rowsArray 需要插入的数据集
+     * @param dwfactor 数据窗信息
+     * @return 插入结果
+     */
+    public String insertDataSet(JSONArray rowsArray, MdDatawindowFactor dwfactor) {
+    	String insertSql = "";
+    	String insertTab = "";
+    	String insertStr = "";
+    	String valueStr = "";
+    	String pkidStr = "";
+        Map<String, Object> values = new HashMap<String, Object>();
+    	try {
+    		//首选拼接更新语句
+    		insertTab = dwfactor.getUpdTable();
+	        String colInfos = getdwcolumn_info1_10(dwfactor);
+	        String colInfo = "";
+	        String dbName = "";
+	        String colName = "";
+	        String colType = "";
+	        String colVal = "";
+    		for (int i = 0; i < rowsArray.size(); i++) {
+    			insertStr = "";
+    			JSONObject rowData = rowsArray.getJSONObject(i);
+    			JSONArray colsArray = rowData.getJSONArray("rowdata");
+    			values = new HashMap<String, Object>();
+    			for (int j = 0; j < colsArray.size(); j++) {
+    				JSONObject colData = colsArray.getJSONObject(j);
+    				colName = colData.getString("KEY"); //别名
+    				colType = colData.getString("TYPE"); //类型，主要区分出日期
+    				colVal = colData.getString("VAL");  //值
+    				colInfo = StringUtil.getSubString(colInfos, colName);
+    		    	dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+    				if ("createTime".equals(colName) || "modifyTime".equals(colName)) {
+    					insertStr += "," +dbName;
+    					valueStr += ",sysdate";
+    				} else {
+        				colInfo = StringUtil.getSubString(colInfos, colName);
+        		    	dbName = StringUtil.getSubString(colInfo, "DB"); //数据库列名
+        		    	if ("DATE".equals(colType)) {
+        		    		insertStr += "," +dbName;
+        					valueStr += ",to_date(:" + colName + ",'yyyy-MM-dd hh24:mi:ss')";
+        		    	} else {
+        					insertStr += "," +dbName;
+        					valueStr += ",:" + colName;
+        				}
+        		    	if ("pkid".equals(colName)) {
+        		    		pkidStr = getNewPkid(insertTab);
+        		    		colVal = pkidStr;
+        		    	} else if ("createUser".equals(colName) || "modifyUser".equals(colName)) {
+							colVal = GlobalUtil.getUser().getPcode();
+						}
+						values.put(colName, colVal);
+    				}
+    			}
+    			if (insertStr.length() > 0) {
+    				insertSql = "INSERT INTO " + insertTab + " (" + insertStr.substring(1) + ") VALUES (" + valueStr.substring(1) + ")";
+        			jdBaseDao.update(insertSql, values);
+    			}
+    		}
+    	} catch (Exception e) {
+    		throw e;
+    	}
+        return CommonMsgOutput.getResponseJson(true, 0, pkidStr, "OK", "INSERT");
+    }
+    
+    /**
+     * @Title: getNewPkid 获取PKID
+     * @param tableName 表名
+     * @return 新增主键值
+     */
+    public String getNewPkid(String tableName) {
+    	String pkidString = "";
+    	try {
+    		int newId = jdBaseDao.queryForInt("SELECT fun_get_comm_pkid('" + tableName + "') FROM DUAL");
+    		pkidString = String.valueOf(newId);
+		} catch (Exception e) {
+			throw e;
+		}
+    	return pkidString;
     }
 }

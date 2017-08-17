@@ -308,6 +308,7 @@ function ajaxExecute(ajaxUrl,paramsData,successFun,reqAsync,sendMethod,ajaxTimeo
           async : reqAsync,  //true为异步,false为同步
           timeout : ajaxTimeout, //超时时间设置，单位毫秒
           type : sendMethod,
+          data : paramsData,
           success : function(responseText) {
             successFun(responseText);
           },

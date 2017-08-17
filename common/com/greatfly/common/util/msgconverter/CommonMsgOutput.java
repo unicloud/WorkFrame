@@ -117,13 +117,14 @@ public final class CommonMsgOutput {
     @SuppressWarnings("static-access")
     public static String getResponseJson(boolean success, int total, Object rows, 
             String msg, String operationType) {
+        JSONObject.DEFFAULT_DATE_FORMAT="yyyy-MM-dd HH:mm:ss";//设置日期格式
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("success", success);
         jsonObject.put("total", total);
         jsonObject.put("rows", rows);
         jsonObject.put("msg", getErrorMsg(msg));
         jsonObject.put("operationType", operationType);
-        return jsonObject.toJSONString(jsonObject, SerializerFeature.WriteMapNullValue);
+        return jsonObject.toJSONString(jsonObject, SerializerFeature.WriteMapNullValue,SerializerFeature.WriteDateUseDateFormat);
     }
     
     /**

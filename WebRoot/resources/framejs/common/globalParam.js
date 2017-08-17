@@ -43,3 +43,13 @@ var curUser = {
 
 //默认的查询条件
 var defaultQueryCond = "";
+
+var queryNoPaingDataUrl = "basic/datawindow-factor!queryDataSet.do";
+
+var queryPaingDataUrl = "basic/datawindow-factor!queryPagingDataSet.do";
+
+var insertDatasUrl = "basic/datawindow-factor!insertDatas.do";
+
+var updateDatasUrl = "basic/datawindow-factor!updateDatas.do";
+
+var deleteDatasUrl = "basic/datawindow-factor!deleteDatas.do";

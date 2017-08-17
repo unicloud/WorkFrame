@@ -136,15 +136,34 @@ public class DatawindowFactorAction extends BaseAction {
 
     @Description("新增数据")
     public void insertDatas() {
-        //记日志（数据更新日志、操作日志）
-        //考虑明细的增删改
+    	String jsonString = "";
+    	try {
+        	String rowsStr = request.getParameter("rows");
+        	String dwName = request.getParameter("dwName");
+        	MdDatawindowFactor curDwfactor = datawindowFactorService.getCurDatawindowFactor(dwName);
+        	JSONArray rowsArray = JSONArray.parseArray(rowsStr);
+        	jsonString = datawindowFactorService.insertDataSet(rowsArray, curDwfactor);
+    	} catch (Exception e) {
+            jsonString = CommonMsgOutput.getResponseJson(false, 0, null, e.getMessage(), "INSERT");
+        } finally {
+            output(jsonString,log);
+        }
     }
 
     @Description("更新数据")
     public void updateDatas() {
-        //记日志（数据更新日志、操作日志）
-        //考虑明细的增删改
-        //需要用数据窗来控制那些字段可更新,并且判断哪些数据有改动到，拼接对应的UPDATE语句
+    	String jsonString = "";
+    	try {
+        	String rowsStr = request.getParameter("rows");
+        	String dwName = request.getParameter("dwName");
+        	MdDatawindowFactor curDwfactor = datawindowFactorService.getCurDatawindowFactor(dwName);
+        	JSONArray rowsArray = JSONArray.parseArray(rowsStr);
+        	jsonString = datawindowFactorService.updateDataSet(rowsArray, curDwfactor);
+    	} catch (Exception e) {
+            jsonString = CommonMsgOutput.getResponseJson(false, 0, null, e.getMessage(), "UPDATE");
+        } finally {
+            output(jsonString,log);
+        }
     }
 
     @Description("删除数据")
